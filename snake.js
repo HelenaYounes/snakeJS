@@ -19,7 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			contx.fillRect(body.x, body.y, squareSize, squareSize);
 		});
 	};
-
+	const isOutOfBounds = (el) => {
+		let outOfYaxis = el.y >= canvas.height || el.y <= 0;
+		let outOfXaxis = el.x >= canvas.width || el.x <= 0;
+		return outOfXaxis || outOfYaxis;
+	};
 	const moveApple = () => {
 		apple.x =
 			Math.floor((Math.random() * canvas.width) / squareSize) * squareSize;
@@ -78,15 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
-	const checkCollision = () => {
-		const { x, y } = snake[0];
+	const checkCollision = (el) => {
 		const headInBody = snake.some((body, index) => {
-			let collision = body.x === head.x && body.y === head.y;
-			return index > 0 && collision;
+			let collision = body.x === el.x && body.y === el.y;
+			return index !== 0 && collision;
 		});
-		const outOfBond =
-			x >= canvas.width || x <= 0 || y >= canvas.height || y <= 0;
-		if (headInBody || outOfBond) {
+	};
+	const checkGameOver = () => {
+		if (checkCollision(snake[0]) || isOutOfBounds(snake[0])) {
 			gameOver();
 		}
 	};
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		contx.clearRect(0, 0, canvas.width, canvas.height);
 		draw();
 		moveSnake();
-		checkCollision();
+		checkGameOver();
 	};
 	const start = () => {
 		clearInterval(gameInterval);
