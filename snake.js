@@ -78,10 +78,29 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
+	const checkCollision = () => {
+		const { x, y } = snake[0];
+		const headInBody = snake.some((body, index) => {
+			let collision = body.x === head.x && body.y === head.y;
+			return index > 0 && collision;
+		});
+		const outOfBond =
+			x >= canvas.width || x <= 0 || y >= canvas.height || y <= 0;
+		if (headInBody || outOfBond) {
+			gameOver();
+		}
+	};
+
+	const gameOver = () => {
+		clearInterval(gameInterval);
+		alert("gameOver!");
+		draw();
+	};
 	const loopGame = () => {
-		contx.clearRect(0, 0, 500, 500);
+		contx.clearRect(0, 0, canvas.width, canvas.height);
 		draw();
 		moveSnake();
+		checkCollision();
 	};
 	const start = () => {
 		clearInterval(gameInterval);
