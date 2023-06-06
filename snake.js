@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const pauseButton = document.getElementById("startPause");
+	const score = document.getElementById("score");
+	const highestScore = document.getElementById("highestScore");
 	const canvas = document.getElementById("gameCanvas");
 	const ctx = canvas.getContext("2d");
 	let gameInterval;
@@ -9,20 +11,32 @@ document.addEventListener("DOMContentLoaded", () => {
 	let head = snake[0];
 	let direction = "left";
 	let gamePaused = true;
+	let currentScore = 0;
+	let highscore = Number(window.localStorage.getItem("highscore")) || 0;
 
 	const draw = () => {
 		ctx.fillStyle = "#e74c3c";
-		ctx.fillRect(apple.x, apple.y, squareSize, squareSize);
+		ctx.fillRect(
+			apple.x - squareSize,
+			apple.y - squareSize,
+			squareSize,
+			squareSize
+		);
 
 		snake.forEach((body) => {
 			ctx.fillStyle = "#2ecc71";
-			ctx.fillRect(body.x, body.y, squareSize, squareSize);
+			ctx.fillRect(
+				body.x - squareSize,
+				body.y - squareSize,
+				squareSize,
+				squareSize
+			);
 		});
 	};
-	const isOutOfBounds = (el) => {
-		let outOfYaxis = el.y >= canvas.height || el.y <= 0;
-		let outOfXaxis = el.x >= canvas.width || el.x <= 0;
-		return outOfXaxis || outOfYaxis;
+	const isInBounds = (el) => {
+		let inYaxis = el.y <= canvas.height && el.y >= 0;
+		let inXaxis = el.x <= canvas.width && el.x >= 0;
+		return inXaxis && inYaxis;
 	};
 	const moveApple = () => {
 		apple.x =
@@ -34,6 +48,16 @@ document.addEventListener("DOMContentLoaded", () => {
 				moveApple();
 			}
 		});
+	};
+
+	const updateScore = () => {
+		currentScore += 10;
+		if (currentScore > highscore) {
+			highscore = currentScore;
+			window.localStorage.setItem("highscore", currentScore.toString());
+			toggleText(highestScore, highscore);
+		}
+		toggleText(score, currentScore);
 	};
 
 	const handleKeyPressed = (e) => {
@@ -76,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		snake.unshift(newHead);
 
 		if (newHead.x === apple.x && newHead.y === apple.y) {
+			updateScore();
 			moveApple();
 		} else {
 			snake.pop();
@@ -89,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	};
 	const checkGameOver = () => {
-		if (checkCollision(snake[0]) || isOutOfBounds(snake[0])) {
+		if (!isInBounds(snake[0]) || checkCollision(snake[0])) {
 			gameOver();
 		}
 	};
@@ -97,7 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const gameOver = () => {
 		clearInterval(gameInterval);
 		alert("gameOver!");
-		draw();
 	};
 	const loopGame = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -106,24 +130,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		checkGameOver();
 	};
 
-	const toggleText = () => {
-		pauseButton.innerText = gamePaused ? "start" : "pause";
+	const toggleText = (b, str) => {
+		b.innerText = str;
 	};
 	const pause = () => {
 		clearInterval(gameInterval);
 		gamePaused = true;
-		toggleText();
+		toggleText(pauseButton, "start");
 	};
 	const start = () => {
 		gamePaused = false;
-		toggleText();
+		toggleText(pauseButton, "pause");
 		if (!!gameInterval) clearInterval(gameInterval);
 		draw();
-		gameInterval = setInterval(loopGame, 150);
+		gameInterval = setInterval(loopGame, 200);
 	};
-
+	const init = () => {
+		window.addEventListener("keydown", handleKeyPressed);
+		currentScore = 0;
+		toggleText(highestScore, highscore);
+	};
+	init();
 	pauseButton.addEventListener("click", () => {
 		gamePaused ? start() : pause();
 	});
-	window.addEventListener("keydown", handleKeyPressed);
 });
