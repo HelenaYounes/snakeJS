@@ -1,22 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
+	const pauseButton = document.getElementById("startPause");
 	const canvas = document.getElementById("gameCanvas");
-	const contx = canvas.getContext("2d");
-	const startButton = document.getElementById("start");
-	const pauseButton = document.getElementById("start/pause");
+	const ctx = canvas.getContext("2d");
 	let gameInterval;
 	const squareSize = 20;
 	let snake = [{ x: 200, y: 200 }];
 	let apple = { x: 100, y: 100 };
 	let head = snake[0];
 	let direction = "left";
+	let gamePaused = true;
 
 	const draw = () => {
-		contx.fillStyle = "#e74c3c";
-		contx.fillRect(apple.x, apple.y, squareSize, squareSize);
+		ctx.fillStyle = "#e74c3c";
+		ctx.fillRect(apple.x, apple.y, squareSize, squareSize);
 
 		snake.forEach((body) => {
-			contx.fillStyle = "#2ecc71";
-			contx.fillRect(body.x, body.y, squareSize, squareSize);
+			ctx.fillStyle = "#2ecc71";
+			ctx.fillRect(body.x, body.y, squareSize, squareSize);
 		});
 	};
 	const isOutOfBounds = (el) => {
@@ -100,17 +100,30 @@ document.addEventListener("DOMContentLoaded", () => {
 		draw();
 	};
 	const loopGame = () => {
-		contx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		draw();
 		moveSnake();
 		checkGameOver();
 	};
-	const start = () => {
+
+	const toggleText = () => {
+		pauseButton.innerText = gamePaused ? "start" : "pause";
+	};
+	const pause = () => {
 		clearInterval(gameInterval);
+		gamePaused = true;
+		toggleText();
+	};
+	const start = () => {
+		gamePaused = false;
+		toggleText();
+		if (!!gameInterval) clearInterval(gameInterval);
+		draw();
 		gameInterval = setInterval(loopGame, 150);
 	};
 
-	draw();
-	start();
+	pauseButton.addEventListener("click", () => {
+		gamePaused ? start() : pause();
+	});
 	window.addEventListener("keydown", handleKeyPressed);
 });

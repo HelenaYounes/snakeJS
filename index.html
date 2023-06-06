@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
-		<title>Snake</title>
-		<link rel="stylesheet" type="text/css" href="snake.css" />
+		<link rel="stylesheet" href="snake.css" />
 	</head>
 	<body>
-		<div class="container">
-			<canvas id="gameCanvas" width="500" height="500"></canvas>
-			<button id="start">start</button>
-			<button id="start/pause">pause</button>
+		<h1>Snake Game</h1>
+		<div id="scoreBoard">
+			<span id="score">Score:</span>
+			<span id="highestScore">Highest Score:</span>
+
+			<button id="startPause">Start</button>
 		</div>
+
+		<canvas id="gameCanvas" height="600" width="600"></canvas>
 
 		<script src="snake.js"></script>
 	</body>
