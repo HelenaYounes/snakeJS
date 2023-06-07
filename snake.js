@@ -5,17 +5,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	const highestScore = document.getElementById("highestScore");
 	const canvas = document.getElementById("gameCanvas");
 	const ctx = canvas.getContext("2d");
+	const squareSize = 20;
 	let gameInterval;
 	let gameoverMsg;
-	let squareSize;
 	let snake;
 	let apple;
 	let head;
-	let direction;
-	let gamePaused;
+	let direction = "left";
+	let gamePaused = true;
 	let currentScore;
 	let speed;
-	let highscore;
+	let highscore = Number(window.localStorage.getItem("highscore")) || 0;
 
 	const draw = () => {
 		ctx.fillStyle = "#e74c3c";
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		clearInterval(gameInterval);
 		toggleGameOverMsg();
 		toggleText(pauseButton, "New Game");
-		gameoverMsg = setTimeout(init, 1500);
+		gameoverMsg = setTimeout(init, 1000);
 	};
 	const loopGame = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -170,23 +170,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 	const init = () => {
 		msg.style.opacity = 0;
-		squareSize = 20;
 		snake = [{ x: 200, y: 200 }];
 		apple = { x: 100, y: 100 };
 		head = snake[0];
-		direction = "left";
-		gamePaused = true;
 		currentScore = 0;
-		speed;
-		highscore = Number(window.localStorage.getItem("highscore")) || 0;
+		speed = 150;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		currentScore = 0;
-		speed = 100;
-		toggleText(highestScore, highscore);
 	};
 	pauseButton.addEventListener("click", () => {
 		gamePaused ? start() : pause();
 	});
 	window.addEventListener("keydown", handleKeyPressed);
+	toggleText(highestScore, highscore);
 	init();
 });
