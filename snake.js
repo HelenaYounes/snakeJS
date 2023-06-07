@@ -2,6 +2,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	const pauseButton = document.getElementById("startPause");
 	const score = document.getElementById("score");
 	const msg = document.getElementById("game-over");
+	const lives = document.getElementById("lives");
+	const snakeHead = new Image();
+	snakeHead.src = "head.jpg";
+	const snakeTail = new Image();
+	snakeTail.src = "tail.jpg";
+	const snakeBody = new Image();
+	snakeBody.src = "body.jpg";
+	const appleImg = new Image();
+	appleImg.src = "apple.png";
+	const chestImg = new Image();
+	chestImg.src = "chest.jpeg";
 	const highestScore = document.getElementById("highestScore");
 	const canvas = document.getElementById("gameCanvas");
 	const ctx = canvas.getContext("2d");
@@ -10,25 +21,37 @@ document.addEventListener("DOMContentLoaded", () => {
 	let gameoverMsg;
 	let snake;
 	let apple;
+	let chest;
 	let head;
 	let direction = "left";
 	let gamePaused = true;
 	let currentScore;
 	let speed;
+	let currentcurrentLes;
 	let highscore = Number(window.localStorage.getItem("highscore")) || 0;
 
 	const draw = () => {
-		ctx.fillStyle = "#e74c3c";
-		ctx.fillRect(
+		ctx.drawImage(
+			appleImg,
 			apple.x - squareSize,
 			apple.y - squareSize,
 			squareSize,
 			squareSize
 		);
 
+		if (currentScore > 20)
+			ctx.drawImage(
+				chestImg,
+				chest.x - squareSize,
+				chest.y - squareSize,
+				squareSize,
+				squareSize
+			);
+
 		snake.forEach((body) => {
-			ctx.fillStyle = "#2ecc71";
-			ctx.fillRect(
+			let img = body === snake[0] ? snakeHead : snakeBody;
+			ctx.drawImage(
+				img,
 				body.x - squareSize,
 				body.y - squareSize,
 				squareSize,
@@ -37,30 +60,33 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	};
 	const isInBounds = (el) => {
-		let inYaxis = el.y <= canvas.height && el.y >= 0;
-		let inXaxis = el.x <= canvas.width && el.x >= 0;
+		let inYaxis = el.y > 0 && el.y < canvas.height;
+		let inXaxis = el.x > 0 && el.x < canvas.width;
 		return inXaxis && inYaxis;
 	};
-	const moveApple = () => {
-		apple.x =
+	const moveItem = (item) => {
+		item.x =
 			Math.floor((Math.random() * canvas.width) / squareSize) * squareSize;
-		apple.y =
+		item.y =
 			Math.floor((Math.random() * canvas.height) / squareSize) * squareSize;
 		snake.forEach((part) => {
-			if (part.x === apple.x && part.y === apple.y) {
-				moveApple();
+			if (part.x === item.x && part.y === item.y) {
+				moveItem(item);
 			}
 		});
 	};
 
 	const updateScore = () => {
 		currentScore += 10;
+
 		if (currentScore > highscore) {
 			highscore = currentScore;
 			window.localStorage.setItem("highscore", currentScore.toString());
 			toggleText(highestScore, highscore);
 		}
 		toggleText(score, currentScore);
+		moveItem(apple);
+		if (speed > 80) increaseSpeed();
 	};
 
 	const handleKeyPressed = (e) => {
@@ -82,6 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				break;
 		}
 	};
+	const catchItem = (item) => {
+		return head.x === item.x && head.y === item.y;
+	};
+
 	const moveSnake = () => {
 		let { x, y } = head;
 		let newHead;
@@ -105,14 +135,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 		snake.unshift(newHead);
 		head = newHead;
-
-		if (head.x === apple.x && head.y === apple.y) {
-			updateScore();
-			if (speed > 80) increaseSpeed();
-			moveApple();
-		} else {
-			snake.pop();
+		if (catchItem(chest) && currentScore > 20) {
+			currentLives++;
+			toggleText(lives, currentLives);
+			moveItem(chest);
 		}
+		catchItem(apple) ? updateScore() : snake.pop();
 	};
 
 	const checkCollision = (el) => {
@@ -172,9 +200,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		msg.style.opacity = 0;
 		snake = [{ x: 200, y: 200 }];
 		apple = { x: 100, y: 100 };
+		chest = { x: 200, y: 300 };
 		head = snake[0];
 		currentScore = 0;
 		speed = 150;
+		currentLives = 0;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	};
 	pauseButton.addEventListener("click", () => {
