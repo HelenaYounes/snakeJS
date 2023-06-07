@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let squareSize;
 	let snake;
 	let apple;
+	let head;
 	let direction;
 	let gamePaused;
 	let currentScore;
@@ -82,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 	const moveSnake = () => {
-		let { x, y } = snake[0];
+		let { x, y } = head;
 		let newHead;
 		switch (direction) {
 			case "down":
@@ -103,8 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				break;
 		}
 		snake.unshift(newHead);
+		head = newHead;
 
-		if (newHead.x === apple.x && newHead.y === apple.y) {
+		if (head.x === apple.x && head.y === apple.y) {
 			updateScore();
 			if (speed > 80) increaseSpeed();
 			moveApple();
@@ -120,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	};
 	const checkGameOver = () => {
-		if (!isInBounds(snake[0]) || checkCollision(snake[0])) {
+		if (!isInBounds(head) || checkCollision(head)) {
 			gameOver();
 		}
 	};
@@ -133,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		clearInterval(gameInterval);
 		toggleGameOverMsg();
 		toggleText(pauseButton, "New Game");
-		gameoverMsg = setTimeout(init, 2000);
+		gameoverMsg = setTimeout(init, 1500);
 	};
 	const loopGame = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
