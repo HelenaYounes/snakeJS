@@ -28,29 +28,24 @@ let score;
 let lives;
 let highestScore = Number(window.localStorage.getItem("highestscore")) || 0;
 
-const moveItem = () => {
-	randx = Math.floor(Math.random() * (canvas.width / squareSize)) * squareSize;
-	randy = Math.floor(Math.random() * (canvas.height / squareSize)) * squareSize;
-	const item = { x: randx, y: randy };
-	if (!isInBounds(item)) {
-		moveItem();
-	}
-	return { x: randx, y: randy };
-};
+const moveItem = () => ({
+	x: Math.floor(Math.random() * (canvas.width / squareSize)) * squareSize,
+	y: Math.floor(Math.random() * (canvas.height / squareSize)) * squareSize,
+});
 
 const draw = () => {
 	if (canDrawChest) {
-		ctx.drawImage(chestImg, chest.x - squareSize, chest.y - squareSize);
+		ctx.drawImage(chestImg, chest.x, chest.y, squareSize, squareSize);
 	}
-	ctx.drawImage(appleImg, apple.x - squareSize, apple.y - squareSize);
+	ctx.drawImage(appleImg, apple.x, apple.y, squareSize, squareSize);
 	snake.forEach((body) => {
-		ctx.drawImage(snakeBody, body.x - squareSize, body.y - squareSize);
+		ctx.drawImage(snakeBody, body.x, body.y, squareSize, squareSize);
 	});
 };
 
 const isInBounds = (el) => {
-	let inYaxis = el.y > 0 && el.y < canvas.height;
-	let inXaxis = el.x > 0 && el.x < canvas.width;
+	let inYaxis = el.y >= 0 && el.y <= canvas.height;
+	let inXaxis = el.x >= 0 && el.x <= canvas.width;
 	return inXaxis && inYaxis;
 };
 
