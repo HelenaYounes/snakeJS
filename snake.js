@@ -28,6 +28,11 @@ let score;
 let lives;
 let highestScore = Number(window.localStorage.getItem("highestscore")) || 0;
 
+const increaseSpeed = () => {
+	clearGameInterval(gameInterval);
+	speed = speed > 50 ? speed - 10 : 50;
+	gameInterval = setInterval(loopGame, speed);
+};
 const moveItem = () => ({
 	x: Math.floor(Math.random() * (canvas.width / squareSize)) * squareSize,
 	y: Math.floor(Math.random() * (canvas.height / squareSize)) * squareSize,
@@ -35,11 +40,11 @@ const moveItem = () => ({
 
 const draw = () => {
 	if (canDrawChest) {
-		ctx.drawImage(chestImg, chest.x, chest.y, squareSize, squareSize);
+		ctx.drawImage(chestImg, chest.x, chest.y);
 	}
-	ctx.drawImage(appleImg, apple.x, apple.y, squareSize, squareSize);
+	ctx.drawImage(appleImg, apple.x, apple.y);
 	snake.forEach((body) => {
-		ctx.drawImage(snakeBody, body.x, body.y, squareSize, squareSize);
+		ctx.drawImage(snakeBody, body.x, body.y);
 	});
 };
 
@@ -60,8 +65,10 @@ const updateScore = () => {
 	apples++;
 	canDrawChest = apples > 2;
 	score += 10;
+	distance += squareSize;
 	apple = moveItem();
 	setHigherScore();
+	increaseSpeed();
 };
 
 const checkGameOver = () => {
@@ -162,19 +169,19 @@ const moveSnake = () => {
 	let newHead;
 	switch (direction) {
 		case "down":
-			newHead = { x: x, y: y + distance };
+			newHead = { x: x, y: y + squareSize };
 
 			break;
 		case "up":
-			newHead = { x: x, y: y - distance };
+			newHead = { x: x, y: y - squareSize };
 
 			break;
 		case "right":
-			newHead = { x: x + distance, y: y };
+			newHead = { x: x + squareSize, y: y };
 
 			break;
 		case "left":
-			newHead = { x: x - distance, y: y };
+			newHead = { x: x - squareSize, y: y };
 
 			break;
 	}
