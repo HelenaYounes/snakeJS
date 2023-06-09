@@ -4,25 +4,22 @@ const pauseButton = document.getElementById("startPause");
 const scr = document.getElementById("score");
 const msg = document.getElementById("game-over");
 const life = document.getElementById("lives");
-const snakeHead = new Image();
-snakeHead.src = "head.jpeg";
-const snakeTail = new Image();
-snakeTail.src = "tail.jpg";
+const squareSize = 30;
 const snakeBody = new Image();
 snakeBody.src = "body.png";
 const appleImg = new Image();
 appleImg.src = "apple.png";
 const chestImg = new Image();
-chestImg.src = "gold.jpeg";
+chestImg.src = "chest.png";
 const highestScr = document.getElementById("highestScore");
-const squareSize = 20;
-let distance;
-let canDrawChest;
-let gameInterval;
-let gameoverMsg;
 let snake;
 let apple;
 let chest;
+let speed;
+let distance;
+let gameInterval;
+let canDrawChest;
+let gameoverMsg;
 let head;
 let apples;
 let direction = "left";
@@ -31,26 +28,24 @@ let score;
 let lives;
 let highestScore = Number(window.localStorage.getItem("highestscore")) || 0;
 
-const moveItem = (item) => {
-	item.x = Math.floor(Math.random() * (canvas.width / squareSize)) * squareSize;
-	item.y =
-		Math.floor(Math.random() * (canvas.height / squareSize)) * squareSize;
-
-	let collide = snake.some((part) => part.x === item.x && part.y === item.y);
-	if (collide) {
-		moveItem(item);
+const moveItem = () => {
+	randx = Math.floor(Math.random() * (canvas.width / squareSize)) * squareSize;
+	randy = Math.floor(Math.random() * (canvas.height / squareSize)) * squareSize;
+	const item = { x: randx, y: randy };
+	if (!isInBounds(item)) {
+		moveItem();
 	}
+	return { x: randx, y: randy };
 };
 
 const draw = () => {
-	ctx.drawImage(appleImg, apple.x, apple.y, squareSize, squareSize);
-	snake.forEach((body) => {
-		let img = body === snake[0] ? snakeHead : snakeBody;
-		ctx.drawImage(img, body.x, body.y, squareSize, squareSize);
-	});
 	if (canDrawChest) {
 		ctx.drawImage(chestImg, chest.x - squareSize, chest.y - squareSize);
 	}
+	ctx.drawImage(appleImg, apple.x - squareSize, apple.y - squareSize);
+	snake.forEach((body) => {
+		ctx.drawImage(snakeBody, body.x - squareSize, body.y - squareSize);
+	});
 };
 
 const isInBounds = (el) => {
@@ -70,7 +65,7 @@ const updateScore = () => {
 	apples++;
 	canDrawChest = apples > 2;
 	score += 10;
-	moveItem(apple);
+	apple = moveItem();
 	setHigherScore();
 };
 
@@ -116,7 +111,7 @@ const updateChest = () => {
 	lives += 1;
 	apples = 0;
 	canDrawChest = false;
-	moveItem(chest);
+	chest = moveItem();
 };
 
 const caughtItem = () => {
@@ -127,7 +122,7 @@ const caughtItem = () => {
 		if (head.x === chest.x && head.y === chest.y) {
 			updateChest();
 		} else {
-			checkCollision();
+			checkCollision(head);
 		}
 	}
 	updateHTML();
@@ -160,8 +155,8 @@ const checkCollisionBody = (el) => {
 		return collision && index !== 0;
 	});
 };
-const checkCollision = () => {
-	if (!isInBounds(head) || checkCollisionBody(head)) {
+const checkCollision = (el) => {
+	if (!isInBounds(el) || checkCollisionBody(el)) {
 		lives -= 1;
 		checkGameOver();
 	}
@@ -223,19 +218,18 @@ const toggleGameOverMsg = () => {
 
 const init = () => {
 	msg.style.opacity = 0;
-	chest = { x: 200, y: 300 };
-	snake = [{ x: 200, y: 200 }];
-	apple = { x: 250, y: 250 };
-	head = { x: snake[0].x, y: snake[0].y };
+	snake = [moveItem()];
+	head = snake[0];
+	chest = moveItem();
+	apple = moveItem();
 	score = 0;
-	speed = 150;
+	speed = 200;
 	lives = 0;
 	apples = 0;
-	distance = 20;
+	distance = squareSize;
 	canDrawChest = false;
 	gamePaused = true;
 	updateHTML();
-	moveItem(apple);
 };
 pauseButton.addEventListener("click", () => {
 	gamePaused ? start() : pause();
