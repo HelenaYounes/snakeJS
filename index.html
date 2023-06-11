@@ -6,15 +6,16 @@
 	<body>
 		<!-- <h1>Snake Game</h1> -->
 		<div id="scoreBoard">
-			<p>Score: <span id="score"> 0</span></p>
-			<p>Highest Score: <span id="highestScore">0</span></p>
-			<p>Lives: <span id="lives">0</span></p>
+			<div>Score: <span id="score"> 0</span></div>
+			<div>Highest Score: <span id="highestScore">0</span></div>
+			<div>Lives: <span id="lives">0</span></div>
 			<button id="startPause">Start</button>
 		</div>
 
 		<canvas id="gameCanvas" height="600" width="800"></canvas>
 		<div id="game-over">Game Over</div>
-		<!-- <script src="global_init.js" type="module"></script> -->
-		<script src="snake.js"></script>
+		<script src="game.js" type="module"></script>
+		<script src="snake.js" type="module"></script>
+		<!-- <script src="snake.js" type="module"></script> -->
 	</body>
 </html>
