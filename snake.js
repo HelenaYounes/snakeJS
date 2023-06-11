@@ -1,10 +1,21 @@
 import game from "./game.js";
-document.addEventListener("DOMContentLoaded", () => {
-	const start = game();
-	start.init();
-	setInterval(start.gameLoop, 200);
+const { init, draw, moveSnake, checkPosition, handleKeyPressed } = game();
+let gameInterval;
+const gameLoop = () => {
+	draw(), moveSnake(), checkPosition();
+};
+const startPause = document.getElementById("startPause");
+
+document.addEventListener("keydown", handleKeyPressed);
+startPause.addEventListener("click", () => {
+	gameInterval = setInterval(gameLoop, 200);
 });
-// // const startPause = document.getElementById("startPause");
+
+// 	gamePaused =!gamePaused
+// // 	startPause.textContent = startButtonText;
+
+// // 	}
+
 // // const msg = document.getElementById("game-over");
 
 // // gameOver.init

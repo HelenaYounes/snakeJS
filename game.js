@@ -6,18 +6,7 @@ const game = () => {
 	const ctx = canvas.getContext("2d");
 	const canvaSize = { width: 800, height: 600 };
 	const squareSize = 30;
-	let apple,
-		chest,
-		snake,
-		canDrawChest,
-		apples,
-		direction,
-		speed,
-		score,
-		lives,
-		highestScore,
-		gameInterval;
-
+	let apple, chest, snake, canDrawChest, apples, direction, speed, score, lives;
 	const snakeBody = new Image();
 	snakeBody.src = "body.png";
 	const appleImg = new Image();
@@ -33,7 +22,6 @@ const game = () => {
 		return { x: randX, y: randY };
 	};
 	const init = () => {
-		clearInterval(gameInterval);
 		apple = setNewCoordinates();
 		chest = setNewCoordinates();
 		snake = [setNewCoordinates()];
@@ -43,8 +31,6 @@ const game = () => {
 		direction = "left";
 		score = 0;
 		lives = 0;
-
-		highestScore = Number(window.localStorage.getItem("highestscore")) || 0;
 	};
 	const getCenter = () => {
 		centerX = Math.floor(canvaSize.width / 2);
@@ -127,10 +113,10 @@ const game = () => {
 	};
 
 	const checkPosition = () => {
-		if (isInBounds() && bodyCollision()) {
+		if (isInBounds() && !bodyCollision()) {
 			checkCollision();
 		} else {
-			lives -= 1;
+			lives--;
 			checkGameOver();
 		}
 	};
@@ -150,6 +136,7 @@ const game = () => {
 	};
 
 	const draw = () => {
+		ctx.clearRect(0, 0, canvaSize.width, canvaSize.height);
 		drawApple();
 		drawChest();
 		drawSnake();
@@ -192,12 +179,13 @@ const game = () => {
 		snake.unshift(head);
 	};
 
-	const gameLoop = () => {
-		ctx.clearRect(0, 0, canvaSize.width, canvaSize.height);
-		draw();
-		moveSnake();
-		checkPosition();
+	document.addEventListener("DOMContentLoaded", init);
+	return {
+		init,
+		handleKeyPressed,
+		draw,
+		moveSnake,
+		checkPosition,
 	};
-	document.addEventListener("keydown", handleKeyPressed);
 };
 export default game;
