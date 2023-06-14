@@ -1,30 +1,45 @@
 import {
-	canvas,
-	ctx,
-	gridSize,
 	setNewCoordinates,
 	updateDoc,
 	collision,
-	checkCollision,
-	checkBounds,
 	gameOver,
-	update,
 	badPosition,
-	speed,
-	score,
-	canDrawChest,
-	direction,
-	lives,
-	apples,
-	highestscore,
-	collisionSnake,
 } from "./controllers.js";
 const game = () => {
-	let apple, chest, snake;
+	const canvas = document.getElementById("gameCanvas");
+	const ctx = canvas.getContext("2d");
+	const gridSize = 20;
+	const initial_values = {
+		speed: 200,
+		canDrawChest: false,
+		direction: "left",
+		score: 0,
+		lives: 0,
+		apples: 0,
+		highestscore: Number(localStorage.getItem("highestscore")) || 0,
+	};
+	let apple,
+		chest,
+		snake,
+		speed,
+		score,
+		direction,
+		canDrawChest,
+		highestscore,
+		lives,
+		apples;
+
+	const snakeBody = new Image();
+	snakeBody.src = "body.png";
+	const appleImg = new Image();
+	appleImg.src = "apple.png";
+	const chestImg = new Image();
+	chestImg.src = "chest.png";
+
 	const init = () => {
-		apple = setNewCoordinates();
-		snake = [setNewCoordinates()];
-		chest = setNewCoordinates();
+		apple = setNewCoordinates(canves, gridSize);
+		snake = [setNewCoordinates(canves, gridSize)];
+		chest = setNewCoordinates(canves, gridSize);
 		speed = initial_values.speed;
 		lives = initial_values.lives;
 		highestscore = initial_values.highestscore;
@@ -50,19 +65,17 @@ const game = () => {
 		snake.pop();
 		lives === 0 ? gameOver() : respawn();
 	};
-	const increase = () => {
+	const increaseScore = () => {
 		canDrawChest = apples > 2;
 		apples += 1;
 		newScore = score + 10;
 		updateDoc("score", score);
+
 		if (newScore > highestscore) {
 			highestscore = newScore;
 			updateDoc("highestscore", highestscore);
 		}
 		apple = setNewCoordinates();
-		// updateSpeed(speed);
-
-		update("score", newScore);
 	};
 
 	const increaseChest = () => {
@@ -96,21 +109,17 @@ const game = () => {
 	};
 
 	const updateSnake = (head) => {
-		switch (true) {
-			case badPosition(head, snake):
-				checkGameOver();
-				break;
-			case collisionSnake(apple):
-				increase(score);
-				break;
-			case collisionSnake(chest) && canDrawChest:
-				increase(chest);
-				break;
-			default:
-				snake.pop();
-				break;
+		if (badPosition(head, snake)) {
+			checkGameOver();
+		}
+		if (collision(head)(apple)) {
+			increaseScore();
+		}
+		if (collision(head)(chest) && canDrawChest) {
+			increaseChest();
 		}
 	};
+
 	const handleKeyPressed = (e) => {
 		switch (e.key) {
 			case "ArrowDown":
@@ -131,6 +140,9 @@ const game = () => {
 	};
 	const moveSnake = () => {
 		let head = { ...snake[0] };
+		if (!head) {
+			debugger;
+		}
 		switch (direction) {
 			case "down":
 				head = { x: head.x, y: head.y + gridSize };
@@ -148,6 +160,7 @@ const game = () => {
 		snake.unshift(head);
 		updateSnake(head);
 	};
+	init();
 
 	return {
 		handleKeyPressed,
@@ -155,9 +168,6 @@ const game = () => {
 		draw,
 		moveSnake,
 		updateSnake,
-		highestscore,
-		score,
-		canDrawChest,
 	};
 };
 export default game;

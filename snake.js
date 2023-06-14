@@ -1,8 +1,8 @@
-import { highestscore, lives, score, speed } from "./game.js";
 import game from "./game.js";
+let gameInterval;
 const { init, draw, moveSnake, handleKeyPressed, updateSnake } = game();
 const gameLoop = () => {
-	draw(), moveSnake(), updateSnake();
+	draw(), moveSnake();
 };
 const startPause = document.getElementById("startPause");
 // const start = () => {
