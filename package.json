@@ -2,7 +2,7 @@
   "name": "snakee",
   "version": "1.0.0",
   "description": "",
-  "main": "snake.js",
+  "main": "main.js",
   "type": "module",
   "scripts": {
     "start": "echo \"Error: no test specified\" && exit 1",

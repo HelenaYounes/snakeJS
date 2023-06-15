@@ -1,33 +1,16 @@
-export const getDoc = (id) => {
-	return document.getElementById(id);
-};
+export const collision = (node) => (item) =>
+	node.x === item.x && node.y === item.y;
 
-export const updateDoc = (id, value) => {
-	let doc = getDoc(id);
-	doc.textContent = `${value}`;
-};
-export const update = (key, newVal) => {
-	game_values[key] = newVal;
-};
-
-export const collision = (head) => (item) => {
-	return head.x === item.x && head.y === item.y;
-};
-export const checkBounds = (head) => {
-	let outXaxis = head.x < 0 || head.x > canvas.width;
-	let outYaxis = head.y < 0 || head.y > canvas.height;
+export const checkBounds = (node, canvas) => {
+	let outXaxis = node.x < 0 || node.x > canvas.width;
+	let outYaxis = node.y < 0 || node.y > canvas.height;
 	return outXaxis || outYaxis;
 };
-export const checkCollision = (arr, head) => {
-	return arr.some((el) => collision(head)(el));
+export const checkCollision = (arr, node) => {
+	return arr.some((el) => collision(node)(el));
 };
-export const badPosition = (head, snake) => {
-	return checkBounds(head) || checkCollision([...snake.slice(1)], head);
-};
-
-export const gameOver = () => {
-	let div = getDoc("game-over");
-	div.style.opacity = 1;
+export const badPosition = (arr, node, canvas) => {
+	return checkBounds(node, canvas) || checkCollision(arr, node);
 };
 
 export const setNewCoordinates = (canvas, gridSize) => {

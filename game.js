@@ -1,53 +1,61 @@
 import {
+	// canvas,
+	// ctx,
+	// gridSize,
+	get,
 	setNewCoordinates,
-	updateDoc,
 	collision,
-	gameOver,
 	badPosition,
 } from "./controllers.js";
-const game = () => {
-	const canvas = document.getElementById("gameCanvas");
-	const ctx = canvas.getContext("2d");
-	const gridSize = 20;
-	const initial_values = {
-		speed: 200,
-		canDrawChest: false,
-		direction: "left",
-		score: 0,
-		lives: 0,
-		apples: 0,
-		highestscore: Number(localStorage.getItem("highestscore")) || 0,
-	};
-	let apple,
-		chest,
-		snake,
-		speed,
-		score,
-		direction,
-		canDrawChest,
-		highestscore,
-		lives,
-		apples;
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const gridSize = 20;
 
-	const snakeBody = new Image();
-	snakeBody.src = "body.png";
-	const appleImg = new Image();
-	appleImg.src = "apple.png";
-	const chestImg = new Image();
-	chestImg.src = "chest.png";
+const game_defaults = {
+	canDrawChest: false,
+	direction: "left",
+	apples: 0,
+	"score": "0",
+	lives: 0,
+};
+const snakeBody = new Image();
+snakeBody.src = "body.png";
+const appleImg = new Image();
+appleImg.src = "apple.png";
+const chestImg = new Image();
+chestImg.src = "chest.png";
+
+const game = (options) => {
+	// options
+	// grid dimensions (200 x 200)
+
+	//
+
+	let apple, chest, snake;
+	let myData = { ...game_defaults, ...options };
+
+	let { apples, canDrawChest, "score", "lives", direction } = myData;
 
 	const init = () => {
-		apple = setNewCoordinates(canves, gridSize);
-		snake = [setNewCoordinates(canves, gridSize)];
-		chest = setNewCoordinates(canves, gridSize);
-		speed = initial_values.speed;
-		lives = initial_values.lives;
-		highestscore = initial_values.highestscore;
-		canDrawChest = initial_values.canDrawChest;
-		apples = initial_values.apples;
-		direction = initial_values.direction;
-		score = initial_values.score;
+		canvas.width = options.width;
+		canvas.height = options.height;
+		myData = { ...game_defaults, ...options };
+		apple = setNewCoordinates(canvas, gridSize);
+		snake = [setNewCoordinates(canvas, gridSize)];
+		chest = setNewCoordinates(canvas, gridSize);
 	};
+	const getUpdate = (obj) => (propName) => obj[propName];
+	let getMyData = getUpdate(myData);
+
+	const updatePropertyValues = (obj) => (delta) => {
+		return (...propertyNames) => {
+			for (let propName of propertyNames) {
+				obj[propName] += delta;
+			}
+		};
+	};
+	let increase = updatePropertyValues(myData)(1);
+	let decrease = updatePropertyValues(myData)(-1);
 	const respawn = () => {
 		let centerX = Math.floor(canvas.width / 2);
 		let centerY = Math.floor(canvas.height / 2);
@@ -60,30 +68,6 @@ const game = () => {
 			body.y = body.y - dy;
 		});
 		snake[0] = { x: centerX, y: centerY };
-	};
-	const checkGameOver = () => {
-		snake.pop();
-		lives === 0 ? gameOver() : respawn();
-	};
-	const increaseScore = () => {
-		canDrawChest = apples > 2;
-		apples += 1;
-		newScore = score + 10;
-		updateDoc("score", score);
-
-		if (newScore > highestscore) {
-			highestscore = newScore;
-			updateDoc("highestscore", highestscore);
-		}
-		apple = setNewCoordinates();
-	};
-
-	const increaseChest = () => {
-		lives += 1;
-		apples = 0;
-		updateDoc("lives", lives);
-		canDrawChest = false;
-		chest = setNewCoordinates();
 	};
 
 	const drawChest = () => {
@@ -108,16 +92,24 @@ const game = () => {
 		drawSnake();
 	};
 
-	const updateSnake = (head) => {
-		if (badPosition(head, snake)) {
-			checkGameOver();
-		}
+	const updateSnake = (head, canvas) => {
 		if (collision(head)(apple)) {
-			increaseScore();
+			increase("score", "apple");
+
+			apple = setNewCoordinates(canvas, gridSize);
+		} else {
+			snake.pop();
+
+			if (badPosition([...snake].slice(1), head, canvas)) {
+				decrease("lives");
+			} else if (collision(head)(chest) && canDrawChest) {
+				increase("lives");
+
+				chest = setNewCoordinates(canvas, gridSize);
+			}
+			apples = 0;
 		}
-		if (collision(head)(chest) && canDrawChest) {
-			increaseChest();
-		}
+		canDrawChest = apples > 2;
 	};
 
 	const handleKeyPressed = (e) => {
@@ -135,11 +127,12 @@ const game = () => {
 				direction = direction !== "right" ? "left" : direction;
 				break;
 			default:
-				direction = "left";
+				return direction;
 		}
 	};
+
 	const moveSnake = () => {
-		let head = { ...snake[0] };
+		let head = snake[0];
 		if (!head) {
 			debugger;
 		}
@@ -158,16 +151,16 @@ const game = () => {
 				break;
 		}
 		snake.unshift(head);
-		updateSnake(head);
+		updateSnake(head, canvas);
 	};
-	init();
-
 	return {
-		handleKeyPressed,
 		init,
+		handleKeyPressed,
 		draw,
 		moveSnake,
 		updateSnake,
+		getMyData,
+		myData,
 	};
 };
 export default game;
