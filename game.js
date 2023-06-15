@@ -1,21 +1,15 @@
-import {
-	// canvas,
-	// ctx,
-	// gridSize,
-	get,
-	setNewCoordinates,
-	collision,
-	badPosition,
-} from "./controllers.js";
+import { setNewCoordinates, collision, badPosition } from "./controllers.js";
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const gridSize = 20;
 
 const game_defaults = {
+	width: 800,
+	height: 600,
 	canDrawChest: false,
 	direction: "left",
 	apples: 0,
-	"score": "0",
+	score: 0,
 	lives: 0,
 };
 const snakeBody = new Image();
@@ -30,22 +24,22 @@ const game = (options) => {
 	// grid dimensions (200 x 200)
 
 	//
-
 	let apple, chest, snake;
 	let myData = { ...game_defaults, ...options };
 
-	let { apples, canDrawChest, "score", "lives", direction } = myData;
+	let { apples, canDrawChest, score, direction, lives } = myData;
 
 	const init = () => {
 		canvas.width = options.width;
 		canvas.height = options.height;
 		myData = { ...game_defaults, ...options };
+
 		apple = setNewCoordinates(canvas, gridSize);
 		snake = [setNewCoordinates(canvas, gridSize)];
 		chest = setNewCoordinates(canvas, gridSize);
 	};
 	const getUpdate = (obj) => (propName) => obj[propName];
-	let getMyData = getUpdate(myData);
+	const getMyData = getUpdate(myData);
 
 	const updatePropertyValues = (obj) => (delta) => {
 		return (...propertyNames) => {
@@ -94,12 +88,11 @@ const game = (options) => {
 
 	const updateSnake = (head, canvas) => {
 		if (collision(head)(apple)) {
-			increase("score", "apple");
+			increase("score", "apples");
 
 			apple = setNewCoordinates(canvas, gridSize);
 		} else {
 			snake.pop();
-
 			if (badPosition([...snake].slice(1), head, canvas)) {
 				decrease("lives");
 			} else if (collision(head)(chest) && canDrawChest) {
@@ -158,7 +151,6 @@ const game = (options) => {
 		handleKeyPressed,
 		draw,
 		moveSnake,
-		updateSnake,
 		getMyData,
 		myData,
 	};
