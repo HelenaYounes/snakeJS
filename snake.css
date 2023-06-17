@@ -2,14 +2,14 @@
 body {
     text-align: center;
     align-items: center;
-    height: 100vh;
+    /* height: 100vh; */
     margin: 0;
     padding: 0;
 }
 
 
 #scoreBoard {
-max-width: 600px;
+/* max-width: 600px; */
 justify-content: space-between;
 display: flex;
 margin-inline: auto;

@@ -1,55 +1,49 @@
-import { setNewCoordinates, collision, badPosition } from "./controllers.js";
+import {
+	setNewCoordinates,
+	collision,
+	badPosition,
+	increase,
+	decrease,
+	reset,
+} from "./controllers.js";
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const gridSize = 20;
-
 const game_defaults = {
-	width: 800,
-	height: 600,
-	canDrawChest: false,
 	direction: "left",
+	height: 500,
+	width: 400,
 	apples: 0,
 	score: 0,
 	lives: 0,
+	bonusFlag: 0,
+	gridSize: 20,
 };
 const snakeBody = new Image();
 snakeBody.src = "body.png";
 const appleImg = new Image();
 appleImg.src = "apple.png";
-const chestImg = new Image();
-chestImg.src = "chest.png";
+const bonusImg = new Image();
+bonusImg.src = "bonus.png";
 
 const game = (options) => {
-	// options
-	// grid dimensions (200 x 200)
-
-	//
-	let apple, chest, snake;
+	let apple, bonus, snake;
 	let myData = { ...game_defaults, ...options };
-
-	let { apples, canDrawChest, score, direction, lives } = myData;
-
+	let { direction, height, width, apples, score, lives, bonusFlag, gridSize } =
+		myData;
 	const init = () => {
-		canvas.width = options.width;
-		canvas.height = options.height;
-		myData = { ...game_defaults, ...options };
-
+		canvas.width = width;
+		canvas.height = height;
+		// bonusFlag = 0;
+		// score = 0;
+		// lives = 0;
 		apple = setNewCoordinates(canvas, gridSize);
 		snake = [setNewCoordinates(canvas, gridSize)];
-		chest = setNewCoordinates(canvas, gridSize);
+		bonus = setNewCoordinates(canvas, gridSize);
 	};
-	const getUpdate = (obj) => (propName) => obj[propName];
-	const getMyData = getUpdate(myData);
 
-	const updatePropertyValues = (obj) => (delta) => {
-		return (...propertyNames) => {
-			for (let propName of propertyNames) {
-				obj[propName] += delta;
-			}
-		};
-	};
-	let increase = updatePropertyValues(myData)(1);
-	let decrease = updatePropertyValues(myData)(-1);
+	const getMyData = (str) => myData[str];
+
 	const respawn = () => {
 		let centerX = Math.floor(canvas.width / 2);
 		let centerY = Math.floor(canvas.height / 2);
@@ -64,9 +58,9 @@ const game = (options) => {
 		snake[0] = { x: centerX, y: centerY };
 	};
 
-	const drawChest = () => {
-		if (canDrawChest) {
-			ctx.drawImage(chestImg, chest.x, chest.y);
+	const drawBonus = () => {
+		if (myData["bonusFlag"] > 2) {
+			ctx.drawImage(bonusImg, bonus.x, bonus.y);
 		}
 	};
 	const drawApple = () => {
@@ -82,27 +76,28 @@ const game = (options) => {
 	const draw = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawApple();
-		drawChest();
+		drawBonus();
 		drawSnake();
 	};
 
-	const updateSnake = (head, canvas) => {
+	const updateSnake = (head, canvas, gridSize) => {
 		if (collision(head)(apple)) {
-			increase("score", "apples");
-
+			increase(myData, "score", "apples", "bonusFlag");
+			updateDivs("score");
 			apple = setNewCoordinates(canvas, gridSize);
 		} else {
 			snake.pop();
 			if (badPosition([...snake].slice(1), head, canvas)) {
-				decrease("lives");
-			} else if (collision(head)(chest) && canDrawChest) {
-				increase("lives");
-
-				chest = setNewCoordinates(canvas, gridSize);
+				decrease(myData, "lives");
+				reset(myData)("bonusFlag");
+				updateDivs("lives");
+			} else if (collision(head)(bonus)) {
+				increase(myData, "lives");
+				reset(myData)("bonusFlag");
+				updateDivs("lives");
+				bonus = setNewCoordinates(canvas, gridSize);
 			}
-			apples = 0;
 		}
-		canDrawChest = apples > 2;
 	};
 
 	const handleKeyPressed = (e) => {
@@ -119,8 +114,6 @@ const game = (options) => {
 			case "ArrowLeft":
 				direction = direction !== "right" ? "left" : direction;
 				break;
-			default:
-				return direction;
 		}
 	};
 
@@ -144,14 +137,40 @@ const game = (options) => {
 				break;
 		}
 		snake.unshift(head);
-		updateSnake(head, canvas);
+		updateSnake(head, canvas, gridSize);
 	};
+
+	const updateDivs = (...ids) => {
+		let div;
+		let value;
+		for (let id of ids) {
+			div = document.getElementById(id);
+			value = myData[id];
+			div.textContent = `${value}`;
+		}
+	};
+
+	const updateHighScore = (div, val) => {
+		let score = myData["score"];
+		if (score > val) {
+			div.textContent = `${score}`;
+			localStorage.clear();
+			localStorage.setItem("highestscore", JSON.stringify(score));
+			val = score;
+		}
+		return val;
+	};
+
+	const getDataObject = () => myData;
 	return {
 		init,
 		handleKeyPressed,
 		draw,
 		moveSnake,
 		getMyData,
+		getDataObject,
+		updateDivs,
+		updateHighScore,
 		myData,
 	};
 };

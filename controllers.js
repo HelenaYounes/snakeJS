@@ -18,3 +18,21 @@ export const setNewCoordinates = (canvas, gridSize) => {
 	let randY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
 	return { x: randX, y: randY };
 };
+
+export const updatePropertyValues =
+	(delta) =>
+	(obj, ...propertyNames) => {
+		for (let propName of propertyNames) {
+			obj[propName] += delta;
+		}
+	};
+
+export const increase = updatePropertyValues(1);
+export const decrease = updatePropertyValues(-1);
+export const reset =
+	(obj) =>
+	(...propertyNames) => {
+		for (let propName of propertyNames) {
+			obj[propName] = 0;
+		}
+	};

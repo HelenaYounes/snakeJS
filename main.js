@@ -7,101 +7,76 @@ const custom_options = {
 
 let startPause = document.getElementById("startPause");
 let gameoverDiv = document.getElementById("game-over");
+let highestScoreDiv = document.getElementById("highestscore");
 let opacity = window.getComputedStyle(gameoverDiv).getPropertyValue("opacity");
-
 let gameInterval, gameTimeout;
+
 let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
-let gameState = "NEW";
+highestScoreDiv.textContent = `${highestscore}`;
+let gameState = "PAUSE";
 const myGame = game(custom_options);
-let { init, handleKeyPressed, draw, moveSnake, getMyData, myData } = myGame;
+let {
+	init,
+	handleKeyPressed,
+	draw,
+	moveSnake,
+	getMyData,
+	updateHighScore,
+	myData,
+} = myGame;
 
-// console.log({ init });
-const updateDivs =
-	(obj) =>
-	(value) =>
-	(...ids) => {
-		for (let id of ids) {
-			let div = document.getElementById(id);
-			let newValue = !!value ? getMyData(id) : value;
-			div.textContent = `${newValue}`;
-		}
-	};
-let updateDivsValue = updateDivs(myData);
-const restart = () => {
-	opacity = 1;
-	updateDivsValue("New Game")("startPause");
-	gameTimeout = setTimeout(() => {
-		setGame;
-	}, 1000);
+const reset = () => {
+	clearTimeout(gameTimeout);
+	startPause.textContent = "New Game";
+	opacity = "0";
+	gameState = "NEW";
+	init();
 };
-const updateHighScore = () => {
-	let score = getMyData("score");
-
-	if (score > highestscore) {
-		highestscore = score;
-		updateDivsValue(highestscore)("highestscore");
-		localStorage.clear();
-		localStorage.setItem("highestscore", JSON.stringify(highestscore));
-	}
+const stop = () => {
+	clearInterval(gameInterval);
+	opacity = "1";
+	gameTimeout = setTimeout(reset, 1500);
 };
 
 const checkGameOver = () => {
 	if (getMyData("lives") < 0) {
 		gameState = "GAMEOVER";
-		clearInterval(gameInterval);
-		restart();
+		gameStateHandler();
 	}
 };
 
 const gameStateHandler = () => {
 	switch (gameState) {
-		case "ON": {
-			gameState = "PAUSE";
+		case "NEW":
+			reset();
+			break;
+		case "PAUSE":
+			start();
+			break;
+		case "RUNNING":
 			pause();
 			break;
-		}
-		case "GAMEOVER": {
-			// gameState = "NEW";
-			restart();
+		case "GAMEOVER":
+			stop();
 			break;
-		}
-		case "PAUSE": {
-			gameState = "START";
-			start();
-			break;
-		}
-		case "NEW": {
-			gameState = "START";
-			start();
-			break;
-		}
 	}
-};
-const updateGame = () => {
-	updateDivsValue()("score", "lives");
-	updateHighScore();
-	checkGameOver();
-	updateDivsValue(gameState)("startPause");
 };
 
 const loop = () => {
-	// let head =
-	draw(), moveSnake(), updateGame();
-};
-const setGame = () => {
-	opacity = 0;
-	gameState = "NEW";
-	init();
-	// clearTimeout(gameTimeout);
+	draw();
+	moveSnake();
+	highestscore = updateHighScore(highestScoreDiv, highestscore);
 };
 
 const start = () => {
+	gameState = "RUNNING";
 	gameInterval = setInterval(loop, custom_options.speed);
 };
 const pause = () => {
 	clearInterval(gameInterval);
+	gameState = "PAUSE";
 };
 
 document.addEventListener("keydown", handleKeyPressed);
 startPause.addEventListener("click", gameStateHandler);
-window.addEventListener("load", setGame);
+window.addEventListener("load", init);
