@@ -6,6 +6,7 @@ import {
 	decrease,
 	reset,
 } from "./controllers.js";
+// import { canvas, ctx, gridSize } from "./main.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -13,10 +14,8 @@ const game_defaults = {
 	direction: "left",
 	height: 500,
 	width: 400,
-	apples: 0,
 	score: 0,
 	lives: 0,
-	bonusFlag: 0,
 	gridSize: 20,
 };
 const snakeBody = new Image();
@@ -27,16 +26,16 @@ const bonusImg = new Image();
 bonusImg.src = "bonus.png";
 
 const game = (options) => {
-	let apple, bonus, snake;
+	let apple, bonus, snake, bonusFlag;
 	let myData = { ...game_defaults, ...options };
-	let { direction, height, width, apples, score, lives, bonusFlag, gridSize } =
-		myData;
+	let { gridSize, direction, width, height } = myData;
+	canvas.width = width;
+	canvas.height = height;
+
 	const init = () => {
-		canvas.width = width;
-		canvas.height = height;
-		// bonusFlag = 0;
-		// score = 0;
-		// lives = 0;
+		bonusFlag = 0;
+		myData.score = 0;
+		myData.lives = 0;
 		apple = setNewCoordinates(canvas, gridSize);
 		snake = [setNewCoordinates(canvas, gridSize)];
 		bonus = setNewCoordinates(canvas, gridSize);
@@ -59,7 +58,7 @@ const game = (options) => {
 	};
 
 	const drawBonus = () => {
-		if (myData["bonusFlag"] > 2) {
+		if (bonusFlag > 2) {
 			ctx.drawImage(bonusImg, bonus.x, bonus.y);
 		}
 	};
@@ -82,19 +81,20 @@ const game = (options) => {
 
 	const updateSnake = (head, canvas, gridSize) => {
 		if (collision(head)(apple)) {
-			increase(myData, "score", "apples", "bonusFlag");
+			increase(myData, "score");
+			++bonusFlag;
 			updateDivs("score");
 			apple = setNewCoordinates(canvas, gridSize);
 		} else {
 			snake.pop();
 			if (badPosition([...snake].slice(1), head, canvas)) {
 				decrease(myData, "lives");
-				reset(myData)("bonusFlag");
+				bonusFlag = 0;
 				updateDivs("lives");
 			} else if (collision(head)(bonus)) {
 				increase(myData, "lives");
-				reset(myData)("bonusFlag");
 				updateDivs("lives");
+				bonusFlag = 0;
 				bonus = setNewCoordinates(canvas, gridSize);
 			}
 		}
@@ -115,6 +115,7 @@ const game = (options) => {
 				direction = direction !== "right" ? "left" : direction;
 				break;
 		}
+		myData["direction"] = direction;
 	};
 
 	const moveSnake = () => {

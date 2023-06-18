@@ -10,7 +10,6 @@ let gameoverDiv = document.getElementById("game-over");
 let highestScoreDiv = document.getElementById("highestscore");
 let opacity = window.getComputedStyle(gameoverDiv).getPropertyValue("opacity");
 let gameInterval, gameTimeout;
-
 let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let gameState = "PAUSE";
@@ -24,7 +23,7 @@ let {
 	updateHighScore,
 	myData,
 } = myGame;
-
+init();
 const reset = () => {
 	clearTimeout(gameTimeout);
 	startPause.textContent = "New Game";
@@ -79,4 +78,4 @@ const pause = () => {
 
 document.addEventListener("keydown", handleKeyPressed);
 startPause.addEventListener("click", gameStateHandler);
-window.addEventListener("load", init);
+// window.addEventListener("load", init);
