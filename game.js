@@ -58,16 +58,16 @@ snakeBody.left.src = "./assets/body_horizontal.png";
 appleImg.src = "./assets/apple.png";
 bonusImg.src = "./assets/bonus.png";
 
+const keyEvent = {
+	ArrowDown: "down",
+	ArrowUp: "up",
+	ArrowLeft: "left",
+	ArrowRight: "right",
+};
 const game = (options) => {
 	let apple, bonus, snake, bonusFlag, score, lives, bodyImage;
 	const myData = { ...game_defaults, ...options };
 	let { gridSize, width, height } = myData;
-	const keyEvent = {
-		ArrowDown: "down",
-		ArrowUp: "up",
-		ArrowLeft: "left",
-		ArrowRight: "right",
-	};
 
 	const init = () => {
 		canvas.width = width;
@@ -87,14 +87,11 @@ const game = (options) => {
 		let dx = snake[0].x - centerX;
 		let dy = snake[0].y - centerY;
 
-		snake.forEach((body, index) => {
-			if (index === 0) {
-				body.x = centerX;
-				body.y = centerY;
-			}
+		snake.forEach((body) => {
 			body.x = body.x - dx;
 			body.y = body.y - dy;
 		});
+		snake[0] = { x: centerX, y: centerY };
 	};
 
 	const drawBonus = () => {
