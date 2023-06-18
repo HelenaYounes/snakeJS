@@ -1,32 +1,44 @@
+	body {
+	    display: flex;
+	    justify-content: center;
+	    align-items: center;
+	    height: 100vh;
+	    margin: 0;
+	}
 
-body {
-    text-align: center;
-    align-items: center;
-    /* height: 100vh; */
-    margin: 0;
-    padding: 0;
-}
+	#container {
+	    display: flex;
+	    flex-direction: column;
+	    align-items: center;
+	}
+
+	#scoreBoard {
+	    display: flex;
+	    align-items: center;
+	    margin-bottom: 20px;
+	    text-align: center;
+	}
+
+	#scoreBoard div {
+	    margin-right: 20px;
+	}
+
+	#scoreBoard div:not(:last-child) {
+	    margin-right: 40px;
+	}
+
+	#scoreBoard button {
+	    margin-left: 20px;
+	}
 
 
-#scoreBoard {
-/* max-width: 600px; */
-justify-content: space-between;
-display: flex;
-margin-inline: auto;
-align-items: center;    
-margin-top: 20px ;
-}
+	canvas {
+	    border: 1px solid black;
+        background-image: url('./assets/snakeBackground.jpeg');
+        background-size: cover;
+	}
 
-
-#gameCanvas {
-    border: 1px solid #555;
-    position: relative;
-    background-image: url('snakeBackground.jpeg');
-    background-size: cover;
-    /* box-shadow: 0 0 30px rgba(0, 0, 0, 0.3); */
-    margin: 0;
-}
-
+	
 /* Game over message */
 #game-over {
     position: absolute;

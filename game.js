@@ -10,31 +10,75 @@ const game_defaults = {
 	lives: 0,
 	gridSize: 20,
 };
-const game = (options) => {
-	let apple, bonus, snake, bonusFlag, score, lives, updatedValue;
-	const myData = { ...game_defaults, ...options };
-	let { gridSize, direction, width, height } = myData;
 
-	const snakeBody = new Image();
-	const appleImg = new Image();
-	const bonusImg = new Image();
+const snakeHead = {
+	up: new Image(),
+	down: new Image(),
+	left: new Image(),
+	right: new Image(),
+};
+const snakeBody = {
+	up: new Image(),
+	down: new Image(),
+	left: new Image(),
+	right: new Image(),
+	upright: new Image(),
+	downright: new Image(),
+	upleft: new Image(),
+	downleft: new Image(),
+};
+const snakeTail = {
+	up: new Image(),
+	down: new Image(),
+	left: new Image(),
+	right: new Image(),
+};
+const appleImg = new Image();
+const bonusImg = new Image();
+
+snakeHead.up.src = "./assets/head_up.png";
+snakeHead.down.src = "./assets/head_down.png";
+snakeHead.left.src = "./assets/head_left.png";
+snakeHead.right.src = "./assets/head_right.png";
+
+snakeTail.up.src = "./assets/tail_down.png";
+snakeTail.down.src = "./assets/tail_up.png";
+snakeTail.right.src = "./assets/tail_left.png";
+snakeTail.left.src = "./assets/tail_right.png";
+
+snakeBody.down.src = "./assets/body_vertical.png";
+snakeBody.up.src = "./assets/body_vertical.png";
+snakeBody.downright.src = "./assets/body_bottomleft.png";
+snakeBody.downleft.src = "./assets/body_bottomright.png";
+snakeBody.upright.src = "./assets/body_topleft.png";
+snakeBody.upleft.src = "./assets/body_topright.png";
+snakeBody.right.src = "./assets/body_horizontal.png";
+snakeBody.left.src = "./assets/body_horizontal.png";
+
+appleImg.src = "./assets/apple.png";
+bonusImg.src = "./assets/bonus.png";
+
+const game = (options) => {
+	let apple, bonus, snake, bonusFlag, score, lives, bodyImage;
+	const myData = { ...game_defaults, ...options };
+	let { gridSize, width, height } = myData;
+	const keyEvent = {
+		ArrowDown: "down",
+		ArrowUp: "up",
+		ArrowLeft: "left",
+		ArrowRight: "right",
+	};
 
 	const init = () => {
-		snakeBody.src = options.snakeSrc || "body.png";
-		appleImg.src = options.appleSrc || "apple.png";
-		bonusImg.src = options.bonusSrc || "bonus.png";
 		canvas.width = width;
 		canvas.height = height;
 		bonusFlag = 0;
 		score = 0;
 		lives = 0;
-		updatedValue = false;
 		apple = setNewCoordinates(canvas, gridSize);
 		snake = [setNewCoordinates(canvas, gridSize)];
 		bonus = setNewCoordinates(canvas, gridSize);
 	};
-
-	const getMyData = (str) => myData[str];
 
 	const respawn = () => {
 		let centerX = Math.floor(canvas.width / 2);
@@ -43,25 +87,36 @@ const game = (options) => {
 		let dx = snake[0].x - centerX;
 		let dy = snake[0].y - centerY;
 
-		snake.forEach((body) => {
+		snake.forEach((body, index) => {
+			if (index === 0) {
+				body.x = centerX;
+				body.y = centerY;
+			}
 			body.x = body.x - dx;
 			body.y = body.y - dy;
 		});
-		snake[0] = { x: centerX, y: centerY };
 	};
 
 	const drawBonus = () => {
 		if (bonusFlag > 2) {
-			ctx.drawImage(bonusImg, bonus.x, bonus.y);
+			ctx.drawImage(bonusImg, bonus.x, bonus.y, gridSize, gridSize);
 		}
 	};
 	const drawApple = () => {
-		ctx.drawImage(appleImg, apple.x, apple.y);
+		ctx.drawImage(appleImg, apple.x, apple.y, gridSize, gridSize);
 	};
 
 	const drawSnake = () => {
-		snake.forEach((body) => {
-			ctx.drawImage(snakeBody, body.x, body.y);
+		let snakeImage;
+		snake.forEach((body, index) => {
+			if (index === 0) {
+				snakeImage = snakeHead[myData.direction];
+			} else if (index > 0 && index < snake.length - 1) {
+				snakeImage = bodyImage || snakeBody[myData.direction];
+			} else {
+				snakeImage = snakeTail[myData.direction];
+			}
+			ctx.drawImage(snakeImage, body.x, body.y, gridSize, gridSize);
 		});
 	};
 
@@ -72,66 +127,68 @@ const game = (options) => {
 		drawSnake();
 	};
 
-	const updateSnake = (head, canvas, gridSize) => {
-		if (collision(head)(apple)) {
-			++score;
-			++bonusFlag;
-			apple = setNewCoordinates(canvas, gridSize);
+	const updateSnake = (head) => {
+		if (badPosition(snake, head, canvas)) {
+			bonusFlag = 0;
+			--lives;
+			if (lives >= 0) {
+				respawn();
+			}
 		} else {
-			snake.pop();
-			if (badPosition([...snake].slice(1), head, canvas)) {
-				bonusFlag = 0;
-				--lives;
-				if (lives >= 0) {
-					respawn();
+			snake.unshift(head);
+			if (collision(head)(apple)) {
+				++score;
+				++bonusFlag;
+				apple = setNewCoordinates(canvas, gridSize);
+			} else {
+				snake.pop();
+				if (collision(head)(bonus)) {
+					++lives;
+					bonusFlag = 0;
+					bonus = setNewCoordinates(canvas, gridSize);
 				}
-			} else if (collision(head)(bonus)) {
-				++lives;
-				bonusFlag = 0;
-				bonus = setNewCoordinates(canvas, gridSize);
 			}
 		}
 	};
 
 	const handleKeyPressed = (e) => {
-		switch (e.key) {
-			case "ArrowDown":
-				direction = direction !== "up" ? "down" : direction;
-				break;
-			case "ArrowUp":
-				direction = direction !== "down" ? "up" : direction;
-				break;
-			case "ArrowRight":
-				direction = direction !== "left" ? "right" : direction;
-				break;
-			case "ArrowLeft":
-				direction = direction !== "right" ? "left" : direction;
-				break;
+		let newDirection = keyEvent[e.key] || myData.direction;
+		let opposite =
+			newDirection === myData.direction ||
+			`${newDirection}:${myData.direction}` === "up:down" ||
+			`${newDirection}:${myData.direction}` === "down:up" ||
+			`${newDirection}:${myData.direction}` === "left:right" ||
+			`${newDirection}:${myData.direction}` === "right:left";
+		if (opposite) {
+			bodyImage = snakeBody[myData.direction];
+		} else {
+			bodyImage = snakeBody[`${newDirection}${myData.direction}`];
+			myData.direction = newDirection;
 		}
-		myData["direction"] = direction;
 	};
 
 	const moveSnake = () => {
-		let head = snake[0];
+		let head = { x: snake[0].x, y: snake[0].y };
 		if (!head) {
 			debugger;
 		}
-		switch (direction) {
+		switch (myData.direction) {
 			case "down":
-				head = { x: head.x, y: head.y + gridSize };
+				head.y += gridSize;
 				break;
 			case "up":
-				head = { x: head.x, y: head.y - gridSize };
+				head.y -= gridSize;
 				break;
 			case "right":
-				head = { x: head.x + gridSize, y: head.y };
+				head.x += gridSize;
 				break;
 			case "left":
-				head = { x: head.x - gridSize, y: head.y };
+				head.x -= gridSize;
+				break;
+			default:
 				break;
 		}
-		snake.unshift(head);
-		updateSnake(head, canvas, gridSize);
+		updateSnake(head);
 	};
 
 	const getScore = () => score;
@@ -141,10 +198,12 @@ const game = (options) => {
 		handleKeyPressed,
 		draw,
 		moveSnake,
-		getMyData,
+		updateSnake,
 		getScore,
 		getLives,
 		respawn,
+		keyEvent,
+		myData,
 	};
 };
 export default game;

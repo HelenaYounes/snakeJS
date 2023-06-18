@@ -1,11 +1,12 @@
 import game from "./game.js";
 const custom_options = {
-	width: 600,
+	width: 800,
 	height: 600,
 	speed: 150,
 };
 
 let startPauseDiv = document.getElementById("startPause");
+
 let gameoverDiv = document.getElementById("game-over");
 let scoreDiv = document.getElementById("score");
 let livesDiv = document.getElementById("lives");
@@ -15,7 +16,17 @@ let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let isGameRunning = false;
 const myGame = game(custom_options);
-let { init, handleKeyPressed, draw, moveSnake, getLives, getScore } = myGame;
+let {
+	init,
+	draw,
+	moveSnake,
+	getLives,
+	getScore,
+	updateSnake,
+	myData,
+	keyEvent,
+	handleKeyPressed,
+} = myGame;
 
 const reset = () => {
 	clearTimeout(gameTimeout);
@@ -71,7 +82,6 @@ const pause = () => {
 	startPauseDiv.textContent = "RESUME";
 	isGameRunning = false;
 };
-
-document.addEventListener("keydown", handleKeyPressed);
+document.addEventListener("keydown", myGame.handleKeyPressed);
 startPauseDiv.addEventListener("click", gameStateHandler);
 window.addEventListener("load", init);
