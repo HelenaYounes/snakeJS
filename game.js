@@ -1,12 +1,4 @@
-import {
-	setNewCoordinates,
-	collision,
-	badPosition,
-	increase,
-	decrease,
-	reset,
-} from "./controllers.js";
-// import { canvas, ctx, gridSize } from "./main.js";
+import { setNewCoordinates, collision, badPosition } from "./controllers.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -85,23 +77,18 @@ const game = (options) => {
 			++score;
 			++bonusFlag;
 			apple = setNewCoordinates(canvas, gridSize);
-			updatedValue = "SCORE";
 		} else {
 			snake.pop();
 			if (badPosition([...snake].slice(1), head, canvas)) {
 				bonusFlag = 0;
 				--lives;
 				if (lives >= 0) {
-					updatedValue = "REDO";
 					respawn();
-				} else {
-					updatedValue = "GAMEOVER";
 				}
 			} else if (collision(head)(bonus)) {
 				++lives;
 				bonusFlag = 0;
 				bonus = setNewCoordinates(canvas, gridSize);
-				updatedValue = "BONUS";
 			}
 		}
 	};
@@ -147,14 +134,16 @@ const game = (options) => {
 		updateSnake(head, canvas, gridSize);
 	};
 
-	const getUpdatedValue = () => updatedValue;
+	const getScore = () => score;
+	const getLives = () => lives;
 	return {
 		init,
 		handleKeyPressed,
 		draw,
 		moveSnake,
 		getMyData,
-		getUpdatedValue,
+		getScore,
+		getLives,
 		respawn,
 	};
 };

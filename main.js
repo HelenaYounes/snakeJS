@@ -5,103 +5,73 @@ const custom_options = {
 	speed: 150,
 };
 
-let startPause = document.getElementById("startPause");
+let startPauseDiv = document.getElementById("startPause");
 let gameoverDiv = document.getElementById("game-over");
+let scoreDiv = document.getElementById("score");
+let livesDiv = document.getElementById("lives");
 let highestScoreDiv = document.getElementById("highestscore");
 let gameInterval, gameTimeout;
-let gameData = { score: 0, lives: 0 };
 let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
-let gameState = "PAUSE";
+let isGameRunning = false;
 const myGame = game(custom_options);
-let { init, handleKeyPressed, draw, moveSnake, getUpdatedValue } = myGame;
+let { init, handleKeyPressed, draw, moveSnake, getLives, getScore } = myGame;
 
 const reset = () => {
 	clearTimeout(gameTimeout);
-	startPause.textContent = "New Game";
 	gameoverDiv.style.opacity = "0";
-	gameState = "NEW";
+	isGameRunning = false;
+	startPauseDiv.textContent = "NEW GAME";
+	scoreDiv.textContent = 0;
+	livesDiv.textContent = 0;
 	init();
 };
-const stop = () => {
+const gameOver = () => {
 	clearInterval(gameInterval);
 	gameoverDiv.style.opacity = "1";
 	gameTimeout = setTimeout(reset, 1500);
 };
 
-const gameOver = () => {
-	gameState = "GAMEOVER";
-	gameStateHandler();
-};
-
 const gameStateHandler = () => {
-	switch (gameState) {
-		case "NEW":
-			reset();
-			break;
-		case "PAUSE":
-			start();
-			break;
-		case "RUNNING":
-			pause();
-			break;
-		case "GAMEOVER":
-			stop();
-			break;
-	}
+	isGameRunning ? pause() : start();
 };
-const updateHighScore = (id, val) => {
+const updateHighScore = () => {
+	highestScoreDiv.textContent = `${highestscore}`;
 	localStorage.clear();
-	localStorage.setItem(id, JSON.stringify(val));
-};
-const updateDivVal = (id, value) => {
-	let div = document.getElementById(id);
-	div.textContent = `${value}`;
-	if (id === "score" && value > highestscore) {
-		highestscore = value;
-		updateDivVal("highestscore", highestscore);
-		updateHighScore("highestscore", highestscore);
-	}
+	localStorage.setItem("highestscore", JSON.stringify(highestscore));
 };
 
-const checkUpdate = (update) => {
-	let id = "lives";
-	switch (update) {
-		case "SCORE":
-			++gameData["score"];
-			id = "score";
-			break;
-		case "GAMEOVER":
-			--gameData["lives"];
-			gameOver();
-			break;
-		case "BONUS":
-			++gameData["lives"];
-			break;
-		case "REDO":
-			--gameData["lives"];
-			break;
-		default:
-			return;
+const updateGame = (score, lives) => {
+	if (score > highestscore) {
+		highestscore = score;
+		updateHighScore();
 	}
-	updateDivVal(id, gameData[id]);
+	if (lives < 0) {
+		gameOver();
+	} else {
+		scoreDiv.textContent = `${score}`;
+		livesDiv.textContent = `${lives}`;
+	}
 };
-
 const loop = () => {
 	draw();
 	moveSnake();
-	checkUpdate(getUpdatedValue());
+	let score = getScore();
+	let lives = getLives();
+	updateGame(score, lives);
 };
 
 const start = () => {
-	gameState = "RUNNING";
+	startPauseDiv.textContent = "PAUSE";
+	isGameRunning = true;
 	gameInterval = setInterval(loop, custom_options.speed);
 };
 const pause = () => {
 	clearInterval(gameInterval);
-	gameState = "PAUSE";
+	startPauseDiv.textContent = "RESUME";
+	isGameRunning = false;
 };
 
 document.addEventListener("keydown", handleKeyPressed);
-startPause.addEventListener("click", gameStateHandler);
+startPauseDiv.addEventListener("click", gameStateHandler);
 window.addEventListener("load", init);
