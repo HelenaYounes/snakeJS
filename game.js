@@ -174,9 +174,6 @@ const game = (options) => {
 
 	const moveSnake = () => {
 		let head = { x: snake[0].x, y: snake[0].y };
-		if (!head) {
-			debugger;
-		}
 		switch (myData.direction) {
 			case "down":
 				head.y += gridSize;
