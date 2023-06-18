@@ -86,12 +86,12 @@ const game = (options) => {
 
 		let dx = snake[0].x - centerX;
 		let dy = snake[0].y - centerY;
-
+		snake.shift();
 		snake.forEach((body) => {
 			body.x = body.x - dx;
 			body.y = body.y - dy;
 		});
-		snake[0] = { x: centerX, y: centerY };
+		snake.unshift({ x: centerX, y: centerY });
 	};
 
 	const drawBonus = () => {
