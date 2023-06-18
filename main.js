@@ -1,4 +1,5 @@
 import game from "./game.js";
+
 const custom_options = {
 	width: 800,
 	height: 600,
