@@ -7,7 +7,7 @@ export const checkBounds = (node, canvas) => {
 	return outXaxis || outYaxis;
 };
 export const checkCollision = (arr, node) => {
-	return arr.some((el) => collision(node)(el));
+	return arr.some(collision(node));
 };
 export const badPosition = (arr, node, canvas) => {
 	return checkBounds(node, canvas) || checkCollision(arr, node);
@@ -16,7 +16,7 @@ export const badPosition = (arr, node, canvas) => {
 export const setNewCoordinates = (canvas, gridSize) => {
 	let randX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
 	let randY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-	return { x: randX, y: randY };
+	return { x: randX - gridSize, y: randY - gridSize };
 };
 
 export const updatePropertyValues =

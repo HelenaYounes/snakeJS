@@ -10,6 +10,7 @@ let gameoverDiv = document.getElementById("game-over");
 let highestScoreDiv = document.getElementById("highestscore");
 let opacity = window.getComputedStyle(gameoverDiv).getPropertyValue("opacity");
 let gameInterval, gameTimeout;
+let gameData = { score: 0, lives: 0 };
 let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let gameState = "PAUSE";
@@ -21,27 +22,26 @@ let {
 	moveSnake,
 	getMyData,
 	updateHighScore,
-	myData,
+	respawn,
+	getUpdatedValue,
 } = myGame;
-init();
+
 const reset = () => {
 	clearTimeout(gameTimeout);
 	startPause.textContent = "New Game";
-	opacity = "0";
+	opacity = 0;
 	gameState = "NEW";
 	init();
 };
 const stop = () => {
 	clearInterval(gameInterval);
-	opacity = "1";
+	opacity = 1;
 	gameTimeout = setTimeout(reset, 1500);
 };
 
-const checkGameOver = () => {
-	if (getMyData("lives") < 0) {
-		gameState = "GAMEOVER";
-		gameStateHandler();
-	}
+const gameOver = () => {
+	gameState = "GAMEOVER";
+	gameStateHandler();
 };
 
 const gameStateHandler = () => {
@@ -61,10 +61,39 @@ const gameStateHandler = () => {
 	}
 };
 
+const updateDivVal = (id, value) => {
+	let div = document.getElementById(id);
+	div.textContent = `${value}`;
+};
+
+const checkUpdate = (update) => {
+	let id = "lives";
+	switch (update) {
+		case "SCORE":
+			++gameData["score"];
+			id = "score";
+			break;
+		case "GAMEOVER":
+			--gameData["lives"];
+			gameOver();
+			break;
+		case "BONUS":
+			++gameData["lives"];
+			break;
+		case "REDO":
+			--gameData["lives"];
+			break;
+		default:
+			return;
+	}
+	updateDivVal(id, gameData[id]);
+};
+
 const loop = () => {
 	draw();
 	moveSnake();
 	highestscore = updateHighScore(highestScoreDiv, highestscore);
+	checkUpdate(getUpdatedValue());
 };
 
 const start = () => {
@@ -78,4 +107,4 @@ const pause = () => {
 
 document.addEventListener("keydown", handleKeyPressed);
 startPause.addEventListener("click", gameStateHandler);
-// window.addEventListener("load", init);
+window.addEventListener("load", init);

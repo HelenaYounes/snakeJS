@@ -18,24 +18,25 @@ const game_defaults = {
 	lives: 0,
 	gridSize: 20,
 };
-const snakeBody = new Image();
-snakeBody.src = "body.png";
-const appleImg = new Image();
-appleImg.src = "apple.png";
-const bonusImg = new Image();
-bonusImg.src = "bonus.png";
-
 const game = (options) => {
-	let apple, bonus, snake, bonusFlag;
-	let myData = { ...game_defaults, ...options };
+	let apple, bonus, snake, bonusFlag, score, lives, updatedValue;
+	const myData = { ...game_defaults, ...options };
 	let { gridSize, direction, width, height } = myData;
-	canvas.width = width;
-	canvas.height = height;
+
+	const snakeBody = new Image();
+	const appleImg = new Image();
+	const bonusImg = new Image();
 
 	const init = () => {
+		snakeBody.src = options.snakeSrc || "body.png";
+		appleImg.src = options.appleSrc || "apple.png";
+		bonusImg.src = options.bonusSrc || "bonus.png";
+		canvas.width = width;
+		canvas.height = height;
 		bonusFlag = 0;
-		myData.score = 0;
-		myData.lives = 0;
+		score = 0;
+		lives = 0;
+		updatedValue = false;
 		apple = setNewCoordinates(canvas, gridSize);
 		snake = [setNewCoordinates(canvas, gridSize)];
 		bonus = setNewCoordinates(canvas, gridSize);
@@ -80,22 +81,34 @@ const game = (options) => {
 	};
 
 	const updateSnake = (head, canvas, gridSize) => {
+		updatedValue = false;
 		if (collision(head)(apple)) {
-			increase(myData, "score");
+			++score;
 			++bonusFlag;
-			updateDivs("score");
+
+			// updateDivs("score");
 			apple = setNewCoordinates(canvas, gridSize);
+			updatedValue = "SCORE";
 		} else {
 			snake.pop();
 			if (badPosition([...snake].slice(1), head, canvas)) {
-				decrease(myData, "lives");
+				// decrease(myData, "lives");
 				bonusFlag = 0;
-				updateDivs("lives");
+				// updateDivs("lives");
+				--lives;
+				if (lives >= 0) {
+					updatedValue = "REDO";
+					respawn();
+				} else {
+					updatedValue = "GAMEOVER";
+				}
 			} else if (collision(head)(bonus)) {
-				increase(myData, "lives");
-				updateDivs("lives");
+				// increase(myData, "lives");
+				// updateDivs("lives");
+				++lives;
 				bonusFlag = 0;
 				bonus = setNewCoordinates(canvas, gridSize);
+				updatedValue = "BONUS";
 			}
 		}
 	};
@@ -141,18 +154,7 @@ const game = (options) => {
 		updateSnake(head, canvas, gridSize);
 	};
 
-	const updateDivs = (...ids) => {
-		let div;
-		let value;
-		for (let id of ids) {
-			div = document.getElementById(id);
-			value = myData[id];
-			div.textContent = `${value}`;
-		}
-	};
-
 	const updateHighScore = (div, val) => {
-		let score = myData["score"];
 		if (score > val) {
 			div.textContent = `${score}`;
 			localStorage.clear();
@@ -162,17 +164,16 @@ const game = (options) => {
 		return val;
 	};
 
-	const getDataObject = () => myData;
+	const getUpdatedValue = () => updatedValue;
 	return {
 		init,
 		handleKeyPressed,
 		draw,
 		moveSnake,
 		getMyData,
-		getDataObject,
-		updateDivs,
+		getUpdatedValue,
+		respawn,
 		updateHighScore,
-		myData,
 	};
 };
 export default game;
