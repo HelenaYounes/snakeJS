@@ -16,17 +16,7 @@ let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let isGameRunning = false;
 const myGame = game(custom_options);
-let {
-	init,
-	draw,
-	moveSnake,
-	getLives,
-	getScore,
-	updateSnake,
-	myData,
-	keyEvent,
-	handleKeyPressed,
-} = myGame;
+let { init, draw, moveSnake, getLives, getScore } = myGame;
 
 const reset = () => {
 	clearTimeout(gameTimeout);

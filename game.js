@@ -22,10 +22,10 @@ const snakeBody = {
 	down: new Image(),
 	left: new Image(),
 	right: new Image(),
-	upright: new Image(),
-	downright: new Image(),
-	upleft: new Image(),
-	downleft: new Image(),
+	rightup: new Image(),
+	rightdown: new Image(),
+	leftup: new Image(),
+	leftdown: new Image(),
 };
 const snakeTail = {
 	up: new Image(),
@@ -48,10 +48,10 @@ snakeTail.left.src = "./assets/tail_right.png";
 
 snakeBody.down.src = "./assets/body_vertical.png";
 snakeBody.up.src = "./assets/body_vertical.png";
-snakeBody.downright.src = "./assets/body_bottomleft.png";
-snakeBody.downleft.src = "./assets/body_bottomright.png";
-snakeBody.upright.src = "./assets/body_topleft.png";
-snakeBody.upleft.src = "./assets/body_topright.png";
+snakeBody.leftdown.src = "./assets/body_bottomleft.png";
+snakeBody.rightdown.src = "./assets/body_bottomright.png";
+snakeBody.leftup.src = "./assets/body_topleft.png";
+snakeBody.rightup.src = "./assets/body_topright.png";
 snakeBody.right.src = "./assets/body_horizontal.png";
 snakeBody.left.src = "./assets/body_horizontal.png";
 
@@ -152,18 +152,23 @@ const game = (options) => {
 	};
 
 	const handleKeyPressed = (e) => {
-		let newDirection = keyEvent[e.key] || myData.direction;
+		let newDirection = keyEvent[e.key];
 		let opposite =
 			newDirection === myData.direction ||
 			`${newDirection}:${myData.direction}` === "up:down" ||
 			`${newDirection}:${myData.direction}` === "down:up" ||
 			`${newDirection}:${myData.direction}` === "left:right" ||
 			`${newDirection}:${myData.direction}` === "right:left";
-		if (opposite) {
-			bodyImage = snakeBody[myData.direction];
-		} else {
-			bodyImage = snakeBody[`${newDirection}${myData.direction}`];
+		if (
+			!opposite &&
+			(newDirection === "left" ||
+				newDirection === "right" ||
+				newDirection === "down" ||
+				newDirection === "up")
+		) {
 			myData.direction = newDirection;
+		} else {
+			return;
 		}
 	};
 
@@ -201,9 +206,6 @@ const game = (options) => {
 		updateSnake,
 		getScore,
 		getLives,
-		respawn,
-		keyEvent,
-		myData,
 	};
 };
 export default game;
