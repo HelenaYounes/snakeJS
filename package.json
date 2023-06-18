@@ -1,0 +1,24 @@
+{
+  "name": "snakee",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon snake.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HelenaYounes/snakeJS.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HelenaYounes/snakeJS/issues"
+  },
+  "homepage": "https://github.com/HelenaYounes/snakeJS#readme",
+  "dependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

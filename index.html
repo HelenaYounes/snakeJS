@@ -4,17 +4,16 @@
 		<link rel="stylesheet" href="snake.css" />
 	</head>
 	<body>
-		<h1>Snake Game</h1>
-		<div id="scoreBoard">
-			<p>Score: <span id="score"> 0</span></p>
-			<p>Highest Score: <span id="highestScore">0</span></p>
-			<p>Lives: <span id="lives">0</span></p>
-			<button id="startPause">Start</button>
+		<div id="container">
+			<div id="scoreBoard">
+				<div>Score: <span id="score">0</span></div>
+				<div>Highest Score: <span id="highestscore">0</span></div>
+				<div>Lives: <span id="lives">0</span></div>
+				<button id="startPause">New Game</button>
+			</div>
+			<canvas id="gameCanvas"></canvas>
+			<div id="game-over">Game Over</div>
 		</div>
-
-		<canvas id="gameCanvas" height="600" width="600"></canvas>
-		<div id="game-over">Game Over</div>
-
-		<script src="snake.js"></script>
+		<script src="main.js" type="module"></script>
 	</body>
 </html>
