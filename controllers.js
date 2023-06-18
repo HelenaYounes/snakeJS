@@ -16,7 +16,7 @@ export const badPosition = (arr, node, canvas) => {
 export const setNewCoordinates = (canvas, gridSize) => {
 	let randX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
 	let randY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-	return { x: randX - gridSize, y: randY - gridSize };
+	return { x: randX, y: randY };
 };
 
 export const updatePropertyValues =

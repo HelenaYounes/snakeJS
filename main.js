@@ -8,34 +8,24 @@ const custom_options = {
 let startPause = document.getElementById("startPause");
 let gameoverDiv = document.getElementById("game-over");
 let highestScoreDiv = document.getElementById("highestscore");
-let opacity = window.getComputedStyle(gameoverDiv).getPropertyValue("opacity");
 let gameInterval, gameTimeout;
 let gameData = { score: 0, lives: 0 };
 let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let gameState = "PAUSE";
 const myGame = game(custom_options);
-let {
-	init,
-	handleKeyPressed,
-	draw,
-	moveSnake,
-	getMyData,
-	updateHighScore,
-	respawn,
-	getUpdatedValue,
-} = myGame;
+let { init, handleKeyPressed, draw, moveSnake, getUpdatedValue } = myGame;
 
 const reset = () => {
 	clearTimeout(gameTimeout);
 	startPause.textContent = "New Game";
-	opacity = 0;
+	gameoverDiv.style.opacity = "0";
 	gameState = "NEW";
 	init();
 };
 const stop = () => {
 	clearInterval(gameInterval);
-	opacity = 1;
+	gameoverDiv.style.opacity = "1";
 	gameTimeout = setTimeout(reset, 1500);
 };
 
@@ -60,10 +50,18 @@ const gameStateHandler = () => {
 			break;
 	}
 };
-
+const updateHighScore = (id, val) => {
+	localStorage.clear();
+	localStorage.setItem(id, JSON.stringify(val));
+};
 const updateDivVal = (id, value) => {
 	let div = document.getElementById(id);
 	div.textContent = `${value}`;
+	if (id === "score" && value > highestscore) {
+		highestscore = value;
+		updateDivVal("highestscore", highestscore);
+		updateHighScore("highestscore", highestscore);
+	}
 };
 
 const checkUpdate = (update) => {
@@ -92,7 +90,6 @@ const checkUpdate = (update) => {
 const loop = () => {
 	draw();
 	moveSnake();
-	highestscore = updateHighScore(highestScoreDiv, highestscore);
 	checkUpdate(getUpdatedValue());
 };
 

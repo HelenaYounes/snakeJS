@@ -81,20 +81,15 @@ const game = (options) => {
 	};
 
 	const updateSnake = (head, canvas, gridSize) => {
-		updatedValue = false;
 		if (collision(head)(apple)) {
 			++score;
 			++bonusFlag;
-
-			// updateDivs("score");
 			apple = setNewCoordinates(canvas, gridSize);
 			updatedValue = "SCORE";
 		} else {
 			snake.pop();
 			if (badPosition([...snake].slice(1), head, canvas)) {
-				// decrease(myData, "lives");
 				bonusFlag = 0;
-				// updateDivs("lives");
 				--lives;
 				if (lives >= 0) {
 					updatedValue = "REDO";
@@ -103,8 +98,6 @@ const game = (options) => {
 					updatedValue = "GAMEOVER";
 				}
 			} else if (collision(head)(bonus)) {
-				// increase(myData, "lives");
-				// updateDivs("lives");
 				++lives;
 				bonusFlag = 0;
 				bonus = setNewCoordinates(canvas, gridSize);
@@ -154,16 +147,6 @@ const game = (options) => {
 		updateSnake(head, canvas, gridSize);
 	};
 
-	const updateHighScore = (div, val) => {
-		if (score > val) {
-			div.textContent = `${score}`;
-			localStorage.clear();
-			localStorage.setItem("highestscore", JSON.stringify(score));
-			val = score;
-		}
-		return val;
-	};
-
 	const getUpdatedValue = () => updatedValue;
 	return {
 		init,
@@ -173,7 +156,6 @@ const game = (options) => {
 		getMyData,
 		getUpdatedValue,
 		respawn,
-		updateHighScore,
 	};
 };
 export default game;
