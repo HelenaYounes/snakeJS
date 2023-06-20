@@ -89,10 +89,12 @@ const game = (options) => {
 		lives = 0;
 		level = 1;
 		bomb = setNewCoordinates(canvas, cellSize);
+		bomb.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
 		snake = [setNewCoordinates(canvas, cellSize)];
 		snake[0].direction = myData.direction;
 		bonus = setNewCoordinates(canvas, cellSize);
+		bonus.active = false;
 	};
 
 	const respawn = () => {
@@ -110,12 +112,12 @@ const game = (options) => {
 	};
 
 	const drawBomb = () => {
-		if (level % 2 === 0) {
+		if (bomb.active) {
 			ctx.drawImage(bombImg, bomb.x, bomb.y, cellSize, cellSize);
 		}
 	};
 	const drawBonus = () => {
-		if (bonusFlag > 2) {
+		if (bonus.active) {
 			ctx.drawImage(bonusImg, bonus.x, bonus.y, cellSize, cellSize);
 		}
 	};
@@ -154,8 +156,12 @@ const game = (options) => {
 	};
 
 	const updateSnake = (head) => {
-		if (badPosition(snake, head, canvas) || collision(head)(bomb)) {
+		if (
+			badPosition(snake, head, canvas) ||
+			(collision(head)(bomb) && bomb.active)
+		) {
 			bonusFlag = 0;
+			bomb.active = false;
 			--lives;
 			if (lives >= 0) {
 				respawn();
@@ -168,13 +174,20 @@ const game = (options) => {
 				if (score % 3 === 0) {
 					++level;
 				}
+				if (level % 2 === 0) {
+					bomb.active = true;
+				}
+				if (bonusFlag === 2) {
+					bonus.active = true;
+				}
 				apple = setNewCoordinates(canvas, cellSize);
 			} else {
 				snake.pop();
-				if (collision(head)(bonus)) {
+				if (collision(head)(bonus) && bonus.active) {
 					++lives;
 					bonusFlag = 0;
 					bonus = setNewCoordinates(canvas, cellSize);
+					bonus.active = false;
 				}
 			}
 		}
