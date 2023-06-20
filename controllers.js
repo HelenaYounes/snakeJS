@@ -13,8 +13,8 @@ export const badPosition = (arr, node, canvas) => {
 	return checkBounds(node, canvas) || checkCollision(arr, node);
 };
 
-export const setNewCoordinates = (canvas, gridSize) => {
-	let randX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
-	let randY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-	return { x: randX, y: randY - gridSize };
+export const setNewCoordinates = (canvas, cellSize) => {
+	let randX = Math.floor(Math.random() * (canvas.width / cellSize)) * cellSize;
+	let randY = Math.floor(Math.random() * (canvas.height / cellSize)) * cellSize;
+	return { x: randX, y: randY };
 };

@@ -10,6 +10,7 @@ let startPauseDiv = document.getElementById("startPause");
 
 let gameoverDiv = document.getElementById("game-over");
 let scoreDiv = document.getElementById("score");
+let levelDiv = document.getElementById("level");
 let livesDiv = document.getElementById("lives");
 let highestScoreDiv = document.getElementById("highestscore");
 let gameInterval, gameTimeout;
@@ -17,7 +18,7 @@ let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let isGameRunning = false;
 const myGame = game(custom_options);
-let { init, draw, moveSnake, getLives, getScore } = myGame;
+let { init, draw, moveSnake, getLives, getScore, getLevel } = myGame;
 
 const reset = () => {
 	clearTimeout(gameTimeout);
@@ -26,6 +27,7 @@ const reset = () => {
 	startPauseDiv.textContent = "NEW GAME";
 	scoreDiv.textContent = 0;
 	livesDiv.textContent = 0;
+	levelDiv.textContent = 1;
 	init();
 };
 const gameOver = () => {
@@ -43,7 +45,7 @@ const updateHighScore = () => {
 	localStorage.setItem("highestscore", JSON.stringify(highestscore));
 };
 
-const updateGame = (score, lives) => {
+const updateGame = (score, lives, level) => {
 	if (score > highestscore) {
 		highestscore = score;
 		updateHighScore();
@@ -53,6 +55,7 @@ const updateGame = (score, lives) => {
 	} else {
 		scoreDiv.textContent = `${score}`;
 		livesDiv.textContent = `${lives}`;
+		levelDiv.textContent = `${level}`;
 	}
 };
 const loop = () => {
@@ -60,7 +63,8 @@ const loop = () => {
 	moveSnake();
 	let score = getScore();
 	let lives = getLives();
-	updateGame(score, lives);
+	let level = getLevel();
+	updateGame(score, lives, level);
 };
 
 const start = () => {
