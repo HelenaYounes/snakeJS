@@ -50,6 +50,12 @@ const snakeTail = {
 	left: new Image(),
 	right: new Image(),
 };
+const snakeTongue = {
+	up: new Image(),
+	down: new Image(),
+	left: new Image(),
+	right: new Image(),
+};
 const appleImg = new Image();
 const bonusImg = new Image();
 
@@ -57,6 +63,11 @@ snakeHead.up.src = "./assets/head_up.png";
 snakeHead.down.src = "./assets/head_down.png";
 snakeHead.left.src = "./assets/head_left.png";
 snakeHead.right.src = "./assets/head_right.png";
+
+snakeTongue.up.src = "./assets/tongueup.jpg";
+snakeTongue.down.src = "./assets/tonguedown.jpg";
+snakeTongue.left.src = "./assets/tongueleft.jpg";
+snakeTongue.right.src = "./assets/tongueright.jpg";
 
 openHead.up.src = "./assets/openup.jpg";
 openHead.down.src = "./assets/opendown.jpg";
@@ -105,11 +116,17 @@ const game = (options) => {
 		lives,
 		level,
 		speed,
-		mouthOpen;
+		mouthOpen,
+		tongueOut,
+		tongueInterval,
+		tongue;
 
 	const myData = { ...game_defaults, ...options };
 	let { cellSize, width, height } = myData;
 
+	const moveTongue = () => {
+		tongueOut = !tongueOut;
+	};
 	const init = () => {
 		canvas.width = width;
 		canvas.height = height;
@@ -119,15 +136,18 @@ const game = (options) => {
 		level = 1;
 		speed = myData.speed;
 		mouthOpen = false;
+		tongueOut = true;
 		rotten = setNewCoordinates(canvas, cellSize);
 		rotten.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
 		snake = [setNewCoordinates(canvas, cellSize)];
 		snake[0].direction = myData.direction;
+		tongue = { x: snake[0].x - cellSize, y: snake[0].y };
 		bonus = setNewCoordinates(canvas, cellSize);
 		bonus.active = false;
-	};
 
+		tongueInterval = setInterval(moveTongue, 1000);
+	};
 	const respawn = () => {
 		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
 		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
@@ -157,7 +177,15 @@ const game = (options) => {
 
 	const drawSnake = () => {
 		let snakeImage;
-
+		if (!mouthOpen && tongueOut) {
+			ctx.drawImage(
+				snakeTongue[snake[0].direction],
+				tongue.x,
+				tongue.y,
+				cellSize,
+				cellSize
+			);
+		}
 		snake.forEach((body, index) => {
 			if (index === 0) {
 				if (mouthOpen) {
@@ -235,6 +263,8 @@ const game = (options) => {
 			rotten.active = false;
 			if (lives >= 0) {
 				respawn();
+			} else {
+				clearInterval(tongueInterval);
 			}
 		} else {
 			snake.unshift(head);
@@ -263,18 +293,25 @@ const game = (options) => {
 
 	const moveSnake = () => {
 		let head = { x: snake[0].x, y: snake[0].y, direction: myData.direction };
+		tongue = { ...head };
+
 		switch (myData.direction) {
 			case "down":
 				head.y += cellSize;
+				tongue.y = head.y + cellSize;
+
 				break;
 			case "up":
 				head.y -= cellSize;
+				tongue.y = head.y - cellSize;
 				break;
 			case "right":
 				head.x += cellSize;
+				tongue.x = head.x + cellSize;
 				break;
 			case "left":
 				head.x -= cellSize;
+				tongue.x = head.x - cellSize;
 				break;
 			default:
 				break;

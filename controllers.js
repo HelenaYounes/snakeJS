@@ -23,8 +23,8 @@ export const badPosition = (arr, node, canvas) => {
 
 export const setNewCoordinates = (canvas, cellSize) => {
 	let randX =
-		Math.floor(Math.random() * (canvas.width / cellSize - 1 + 1)) * cellSize;
+		Math.floor(Math.random() * (canvas.width / cellSize - 1)) * cellSize;
 	let randY =
-		Math.floor(Math.random() * (canvas.height / cellSize - 1 + 1)) * cellSize;
+		Math.floor(Math.random() * (canvas.height / cellSize - 1)) * cellSize;
 	return { x: randX, y: randY };
 };

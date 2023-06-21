@@ -10,11 +10,13 @@ const custom_options = {
 let startPauseDiv = document.getElementById("startPause");
 
 let gameoverDiv = document.getElementById("game-over");
+let canvasDiv = document.getElementById("gameCanvas");
 let scoreDiv = document.getElementById("score");
 let levelDiv = document.getElementById("level");
 let livesDiv = document.getElementById("lives");
 let highestScoreDiv = document.getElementById("highestscore");
 let gameInterval, gameTimeout;
+let newGame = true;
 let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let isGameRunning = false;
@@ -36,6 +38,9 @@ const reset = () => {
 	isGameRunning = false;
 	startPauseDiv.textContent = "NEW GAME";
 	gameSpeed = custom_options.speed;
+	newGame = true;
+	canvasDiv.style.backgroundImage = "url(./assets/startPage.png)";
+
 	scoreDiv.textContent = 0;
 	livesDiv.textContent = 0;
 	levelDiv.textContent = 1;
@@ -44,10 +49,16 @@ const reset = () => {
 const gameOver = () => {
 	clearInterval(gameInterval);
 	gameoverDiv.style.opacity = "1";
-	gameTimeout = setTimeout(reset, 1500);
+	// canvasDiv.style.backgroundImage = "url(./assets/gameover.png)";
+	gameTimeout = setTimeout(reset, 1000);
 };
 
 const gameStateHandler = () => {
+	if (newGame) {
+		canvasDiv.style.backgroundImage = 'url("./assets/snakeBackground.jpeg")';
+		newGame = false;
+		gameTimeout = setInterval(start, 1000);
+	}
 	isGameRunning ? pause() : start();
 };
 const updateHighScore = () => {
@@ -85,6 +96,7 @@ const loop = () => {
 };
 
 const start = () => {
+	clearTimeout(gameTimeout);
 	startPauseDiv.textContent = "PAUSE";
 	isGameRunning = true;
 	gameInterval = setInterval(loop, gameSpeed);
