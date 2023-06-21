@@ -184,20 +184,9 @@ const game = (options) => {
 			bonus.active = false;
 		}
 	};
-	const gotRotten = () => {
-		if (rotten.active) {
-			--lives;
-			bonusFlag = 0;
-			rotten = setNewCoordinates(canvas, cellSize);
-			rotten.active = false;
 
-			if (lives >= 0) {
-				respawn();
-			}
-		}
-	};
 	const caughtFood = (head) => {
-		let foods = [apple, bonus, rotten];
+		let foods = [apple, bonus];
 		let res = foods.find((food) => food.x === head.x && food.y === head.y);
 		if (res === apple) {
 			gotApple();
@@ -206,15 +195,16 @@ const game = (options) => {
 			if (res === bonus) {
 				gotBonus();
 			}
-			if (res === rotten) {
-				gotRotten();
-			}
 		}
 	};
 
 	const checkCollisions = (head) => {
-		if (badPosition(snake, head, canvas)) {
+		if (
+			badPosition(snake, head, canvas) ||
+			(collision(head)(rotten) && rotten.active)
+		) {
 			--lives;
+			score -= 10;
 			bonusFlag = 0;
 			rotten = setNewCoordinates(canvas, cellSize);
 			rotten.active = false;
