@@ -34,7 +34,7 @@
 
 	canvas {
 	    border: 1px solid black;
-        background-image: url('./assets/startPage.png');
+        background-image: url('./assets/fatsnake.jpeg');
 		background-size: cover;
 		transition: background-image 1s ease;
 	}
