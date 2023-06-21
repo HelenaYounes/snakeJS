@@ -54,16 +54,20 @@ snakeTail.left.src = "./assets/tail_right.png";
 
 snakeBody.down.src = "./assets/body_vertical.png";
 snakeBody.up.src = "./assets/body_vertical.png";
-snakeBody.rightdown.src = "./assets/body_bottomleft.png";
-snakeBody.upleft.src = "./assets/body_bottomleft.png";
-snakeBody.rightup.src = "./assets/body_topleft.png";
-snakeBody.downleft.src = "./assets/body_topleft.png";
-snakeBody.downright.src = "./assets/body_topright.png";
-snakeBody.leftup.src = "./assets/body_topright.png";
-snakeBody.upright.src = "./assets/body_bottomright.png";
-snakeBody.leftdown.src = "./assets/body_bottomright.png";
 snakeBody.right.src = "./assets/body_horizontal.png";
 snakeBody.left.src = "./assets/body_horizontal.png";
+
+snakeBody.rightdown.src = "./assets/body_bottomleft.png";
+snakeBody.upleft.src = "./assets/body_bottomleft.png";
+
+snakeBody.rightup.src = "./assets/body_topleft.png";
+snakeBody.downleft.src = "./assets/body_topleft.png";
+
+snakeBody.downright.src = "./assets/body_topright.png";
+snakeBody.leftup.src = "./assets/body_topright.png";
+
+snakeBody.upright.src = "./assets/body_bottomright.png";
+snakeBody.leftdown.src = "./assets/body_bottomright.png";
 
 appleImg.src = "./assets/apple.png";
 bonusImg.src = "./assets/bonus.png";
@@ -76,7 +80,7 @@ const keyEvent = {
 };
 
 const game = (options) => {
-	let apple, bonus, snake, bomb, bonusFlag, score, lives, level;
+	let apple, bonus, snake, bomb, bonusFlag, score, lives, level, speed;
 
 	const myData = { ...game_defaults, ...options };
 	let { cellSize, width, height } = myData;
@@ -88,6 +92,7 @@ const game = (options) => {
 		score = 0;
 		lives = 0;
 		level = 1;
+		speed = myData.speed;
 		bomb = setNewCoordinates(canvas, cellSize);
 		bomb.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
@@ -98,8 +103,8 @@ const game = (options) => {
 	};
 
 	const respawn = () => {
-		let centerX = Math.floor(canvas.width / 2);
-		let centerY = Math.floor(canvas.height / 2);
+		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
+		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
 
 		let dx = snake[0].x - centerX;
 		let dy = snake[0].y - centerY;
@@ -108,7 +113,6 @@ const game = (options) => {
 			body.x = body.x - dx;
 			body.y = body.y - dy;
 		});
-		snake[0] = { x: centerX, y: centerY, direction: myData.direction };
 	};
 
 	const drawBomb = () => {
@@ -161,6 +165,7 @@ const game = (options) => {
 			(collision(head)(bomb) && bomb.active)
 		) {
 			bonusFlag = 0;
+			bonus.active = false;
 			bomb.active = false;
 			--lives;
 			if (lives >= 0) {
@@ -170,6 +175,7 @@ const game = (options) => {
 			snake.unshift(head);
 			if (collision(head)(apple)) {
 				score += 10;
+				speed -= 10;
 				++bonusFlag;
 				if (score % 3 === 0) {
 					++level;
@@ -236,6 +242,7 @@ const game = (options) => {
 	const getScore = () => score;
 	const getLives = () => lives;
 	const getLevel = () => level;
+	const getSpeed = () => speed;
 	return {
 		init,
 		handleKeyPressed,
@@ -245,6 +252,7 @@ const game = (options) => {
 		getScore,
 		getLives,
 		getLevel,
+		getSpeed,
 	};
 };
 export default game;
