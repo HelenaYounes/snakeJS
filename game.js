@@ -56,6 +56,14 @@ const snakeTail = {
 	down: new Image(),
 	left: new Image(),
 	right: new Image(),
+	rightup: new Image(),
+	rightdown: new Image(),
+	leftup: new Image(),
+	leftdown: new Image(),
+	upright: new Image(),
+	downright: new Image(),
+	upleft: new Image(),
+	downleft: new Image(),
 };
 
 const appleImg = new Image();
@@ -72,32 +80,44 @@ openHead.down.src = "./assets/opendown.jpg";
 openHead.left.src = "./assets/openleft.jpg";
 openHead.right.src = "./assets/openright.jpg";
 
-snakeTail.up.src = "./assets/tail_down.png";
-snakeTail.down.src = "./assets/tail_up.png";
-snakeTail.right.src = "./assets/tail_left.png";
-snakeTail.left.src = "./assets/tail_right.png";
+snakeTail.up.src = "./assets/tail_up.png";
+snakeTail.down.src = "./assets/tail_down.png";
+snakeTail.right.src = "./assets/tail_right.png";
+snakeTail.left.src = "./assets/tail_left.png";
+
+snakeTail.leftdown.src = "./assets/tail_left_curve_down.jpg";
+snakeTail.leftup.src = "./assets/tail_left_curve_up.jpg";
+
+snakeTail.downright.src = "./assets/tail_down_curve_right.jpg";
+snakeTail.downleft.src = "./assets/tail_down_curve_left.jpg";
+
+snakeTail.rightup.src = "./assets/tail_right_curve_up.jpg";
+snakeTail.rightdown.src = "./assets/tail_right_curve_down.jpg";
+
+snakeTail.upleft.src = "./assets/tail_up_curve_left.jpg";
+snakeTail.upright.src = "./assets/tail_up_curve_right.jpg";
 
 snakeBody.down.src = "./assets/body_vertical.png";
 snakeBody.up.src = "./assets/body_vertical.png";
 snakeBody.right.src = "./assets/body_horizontal.png";
 snakeBody.left.src = "./assets/body_horizontal.png";
 
-snakeBody.rightdown.src = "./assets/body_bottomleft.png";
-snakeBody.upleft.src = "./assets/body_bottomleft.png";
+snakeBody.rightdown.src = "./assets/body_curve_bottomleft.png";
+snakeBody.upleft.src = "./assets/body_curve_bottomleft.png";
 
-snakeBody.rightup.src = "./assets/body_topleft.png";
-snakeBody.downleft.src = "./assets/body_topleft.png";
+snakeBody.downleft.src = "./assets/body_curve_topleft.png";
+snakeBody.rightup.src = "./assets/body_curve_topleft.png";
 
-snakeBody.downright.src = "./assets/body_topright.png";
-snakeBody.leftup.src = "./assets/body_topright.png";
+snakeBody.leftup.src = "./assets/body_curve_topright.png";
+snakeBody.downright.src = "./assets/body_curve_topright.png";
 
-snakeBody.upright.src = "./assets/body_bottomright.png";
-snakeBody.leftdown.src = "./assets/body_bottomright.png";
+snakeBody.leftdown.src = "./assets/body_curve_bottomright.png";
+snakeBody.upright.src = "./assets/body_curve_bottomright.png";
 
-appleThroat.up.src = "./assets/applethroatvertical.jpg";
-appleThroat.down.src = "./assets/applethroatvertical.jpg";
-appleThroat.left.src = "./assets/applethroatvertical.jpg";
-appleThroat.right.src = "./assets/applethroatvertical.jpg";
+appleThroat.left.src = "./assets/apple_throat_left_right.jpg";
+appleThroat.right.src = "./assets/apple_throat_left_right.jpg";
+appleThroat.up.src = "./assets/apple_throat_up_down.jpg";
+appleThroat.down.src = "./assets/apple_throat_up_down.jpg";
 
 appleImg.src = "./assets/apple.png";
 bonusImg.src = "./assets/bonus.png";
@@ -116,7 +136,6 @@ const game = (options) => {
 		snake,
 		rotten,
 		bonusFlag,
-		eatingIndexArray,
 		score,
 		lives,
 		level,
@@ -124,7 +143,6 @@ const game = (options) => {
 		mouthOpen,
 		tongueOut,
 		tongueInterval,
-		isEating,
 		tongue;
 
 	const myData = { ...game_defaults, ...options };
@@ -134,6 +152,7 @@ const game = (options) => {
 		tongueOut = !tongueOut;
 	};
 	const init = () => {
+		clearInterval(tongueInterval);
 		canvas.width = width;
 		canvas.height = height;
 		bonusFlag = 0;
@@ -148,8 +167,7 @@ const game = (options) => {
 		snake[0].direction = myData.direction;
 		bonus = setNewCoordinates(canvas, cellSize);
 		bonus.active = false;
-		isEating = false;
-		eatingIndexArray = [];
+		snake[0].isEating = true;
 		tongue = { x: snake[0].x, y: snake[0].y };
 		mouthOpen = false;
 		tongueOut = true;
@@ -208,38 +226,29 @@ const game = (options) => {
 
 	const drawSnake = () => {
 		let snakeImage;
+		let direction;
 
 		snake.forEach((body, index) => {
+			let isTail = index === snake.length - 1 && index > 0;
+			direction = body.direction;
 			if (index === 0) {
-				snakeImage = mouthOpen
-					? openHead[body.direction]
-					: snakeHead[body.direction];
+				snakeImage = mouthOpen ? openHead[direction] : snakeHead[direction];
 			} else {
-				let prevBody = snake[index - 1];
+				let segAhead = snake[index - 1];
+				if (direction !== segAhead.direction) {
+					direction = `${body.direction}${segAhead.direction}`;
+					body.isEating = false;
+				}
 
-				snakeImage = snakeBody[body.direction];
-				if (isEating && eatingIndexArray.includes(index)) {
-					snakeImage = appleThroat[body.direction];
-				}
-				if (index === snake.length - 1 && index > 0) {
-					snakeImage = snakeTail[body.direction];
-					if (isEating && eatingIndexArray.includes(index)) {
-						eatingIndexArray.shift();
-					}
-				}
-				if (prevBody.direction !== body.direction) {
-					snakeImage = snakeBody[`${body.direction}${prevBody.direction}`];
-				}
+				snakeImage = isTail
+					? snakeTail[direction]
+					: body.isEating
+					? appleThroat[direction]
+					: snakeBody[direction];
 			}
 
 			ctx.drawImage(snakeImage, body.x, body.y, cellSize, cellSize);
 		});
-		isEating = eatingIndexArray.length > 0;
-		if (isEating) {
-			eatingIndexArray.forEach(
-				(el, index) => (eatingIndexArray[index] = el + 1)
-			);
-		}
 	};
 
 	const draw = () => {
@@ -256,7 +265,7 @@ const game = (options) => {
 
 		apple = setNewCoordinates(canvas, cellSize);
 
-		eatingIndexArray.push(1);
+		snake[0].isEating = true;
 
 		if (score % 3 === 0) {
 			++level;
@@ -264,7 +273,7 @@ const game = (options) => {
 	};
 	const gotBonus = () => {
 		if (bonus.active) {
-			eatingIndexArray.push(1);
+			snake[0].isEating = true;
 			++lives;
 			bonusFlag = 0;
 			bonus = setNewCoordinates(canvas, cellSize);
@@ -282,7 +291,6 @@ const game = (options) => {
 				gotBonus();
 			}
 		}
-		isEating = eatingIndexArray.length > 0;
 		rotten.active = level > 0 && level % 2 === 0;
 		bonus.active = bonusFlag > 1;
 	};
@@ -297,8 +305,8 @@ const game = (options) => {
 			bonusFlag = 0;
 			rotten = setNewCoordinates(canvas, cellSize);
 			rotten.active = false;
-			isEating = false;
-			eatingIndexArray = [];
+			snake.forEach((body) => (body.isEating = false));
+
 			if (lives >= 0) {
 				respawn();
 			} else {
@@ -330,7 +338,12 @@ const game = (options) => {
 	};
 
 	const moveSnake = () => {
-		let head = { x: snake[0].x, y: snake[0].y, direction: myData.direction };
+		let head = {
+			x: snake[0].x,
+			y: snake[0].y,
+			direction: myData.direction,
+			isEating: false,
+		};
 
 		switch (myData.direction) {
 			case "down":
