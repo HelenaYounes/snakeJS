@@ -1,4 +1,9 @@
-import { setNewCoordinates, collision, badPosition } from "./controllers.js";
+import {
+	setNewCoordinates,
+	collision,
+	badPosition,
+	checkCollision,
+} from "./controllers.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -10,8 +15,8 @@ const game_defaults = {
 	lives: 0,
 	cellSize: 30,
 };
-const bombImg = new Image();
-bombImg.src = "./assets/bomb.png";
+const rottenImg = new Image();
+rottenImg.src = "./assets/rotten.png";
 
 const snakeHead = {
 	up: new Image(),
@@ -54,16 +59,20 @@ snakeTail.left.src = "./assets/tail_right.png";
 
 snakeBody.down.src = "./assets/body_vertical.png";
 snakeBody.up.src = "./assets/body_vertical.png";
-snakeBody.rightdown.src = "./assets/body_bottomleft.png";
-snakeBody.upleft.src = "./assets/body_bottomleft.png";
-snakeBody.rightup.src = "./assets/body_topleft.png";
-snakeBody.downleft.src = "./assets/body_topleft.png";
-snakeBody.downright.src = "./assets/body_topright.png";
-snakeBody.leftup.src = "./assets/body_topright.png";
-snakeBody.upright.src = "./assets/body_bottomright.png";
-snakeBody.leftdown.src = "./assets/body_bottomright.png";
 snakeBody.right.src = "./assets/body_horizontal.png";
 snakeBody.left.src = "./assets/body_horizontal.png";
+
+snakeBody.rightdown.src = "./assets/body_bottomleft.png";
+snakeBody.upleft.src = "./assets/body_bottomleft.png";
+
+snakeBody.rightup.src = "./assets/body_topleft.png";
+snakeBody.downleft.src = "./assets/body_topleft.png";
+
+snakeBody.downright.src = "./assets/body_topright.png";
+snakeBody.leftup.src = "./assets/body_topright.png";
+
+snakeBody.upright.src = "./assets/body_bottomright.png";
+snakeBody.leftdown.src = "./assets/body_bottomright.png";
 
 appleImg.src = "./assets/apple.png";
 bonusImg.src = "./assets/bonus.png";
@@ -76,7 +85,7 @@ const keyEvent = {
 };
 
 const game = (options) => {
-	let apple, bonus, snake, bomb, bonusFlag, score, lives, level;
+	let apple, bonus, snake, rotten, bonusFlag, score, lives, level, speed;
 
 	const myData = { ...game_defaults, ...options };
 	let { cellSize, width, height } = myData;
@@ -88,8 +97,9 @@ const game = (options) => {
 		score = 0;
 		lives = 0;
 		level = 1;
-		bomb = setNewCoordinates(canvas, cellSize);
-		bomb.active = false;
+		speed = myData.speed;
+		rotten = setNewCoordinates(canvas, cellSize);
+		rotten.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
 		snake = [setNewCoordinates(canvas, cellSize)];
 		snake[0].direction = myData.direction;
@@ -98,8 +108,8 @@ const game = (options) => {
 	};
 
 	const respawn = () => {
-		let centerX = Math.floor(canvas.width / 2);
-		let centerY = Math.floor(canvas.height / 2);
+		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
+		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
 
 		let dx = snake[0].x - centerX;
 		let dy = snake[0].y - centerY;
@@ -108,12 +118,11 @@ const game = (options) => {
 			body.x = body.x - dx;
 			body.y = body.y - dy;
 		});
-		snake[0] = { x: centerX, y: centerY, direction: myData.direction };
 	};
 
-	const drawBomb = () => {
-		if (bomb.active) {
-			ctx.drawImage(bombImg, bomb.x, bomb.y, cellSize, cellSize);
+	const drawRotten = () => {
+		if (rotten.active) {
+			ctx.drawImage(rottenImg, rotten.x, rotten.y, cellSize, cellSize);
 		}
 	};
 	const drawBonus = () => {
@@ -150,46 +159,61 @@ const game = (options) => {
 	const draw = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawApple();
-		drawBomb();
+		drawRotten();
 		drawBonus();
 		drawSnake();
 	};
+	const gotApple = () => {
+		score += 10;
+		speed -= 10;
+		++bonusFlag;
+		bonus.active = bonusFlag > 1 ? true : false;
+		apple = setNewCoordinates(canvas, cellSize);
+		if (score % 3 === 0) {
+			++level;
+		}
+		if (level % 2 === 0) {
+			rotten.active = true;
+		}
+	};
+	const gotBonus = () => {
+		if (bonus.active) {
+			++lives;
+			bonusFlag = 0;
+			bonus = setNewCoordinates(canvas, cellSize);
+			bonus.active = false;
+		}
+	};
 
-	const updateSnake = (head) => {
+	const caughtFood = (head) => {
+		let foods = [apple, bonus];
+		let res = foods.find((food) => food.x === head.x && food.y === head.y);
+		if (res === apple) {
+			gotApple();
+		} else {
+			snake.pop();
+			if (res === bonus) {
+				gotBonus();
+			}
+		}
+	};
+
+	const checkCollisions = (head) => {
 		if (
 			badPosition(snake, head, canvas) ||
-			(collision(head)(bomb) && bomb.active)
+			(collision(head)(rotten) && rotten.active)
 		) {
-			bonusFlag = 0;
-			bomb.active = false;
 			--lives;
+			score -= 10;
+			bonusFlag = 0;
+			rotten = setNewCoordinates(canvas, cellSize);
+			rotten.active = false;
 			if (lives >= 0) {
 				respawn();
 			}
 		} else {
 			snake.unshift(head);
-			if (collision(head)(apple)) {
-				score += 10;
-				++bonusFlag;
-				if (score % 3 === 0) {
-					++level;
-				}
-				if (level % 2 === 0) {
-					bomb.active = true;
-				}
-				if (bonusFlag === 2) {
-					bonus.active = true;
-				}
-				apple = setNewCoordinates(canvas, cellSize);
-			} else {
-				snake.pop();
-				if (collision(head)(bonus) && bonus.active) {
-					++lives;
-					bonusFlag = 0;
-					bonus = setNewCoordinates(canvas, cellSize);
-					bonus.active = false;
-				}
-			}
+			caughtFood(head);
 		}
 	};
 
@@ -230,21 +254,25 @@ const game = (options) => {
 			default:
 				break;
 		}
-		updateSnake(head);
+		checkCollisions(head);
 	};
 
 	const getScore = () => score;
 	const getLives = () => lives;
 	const getLevel = () => level;
+	const getSpeed = () => speed;
+	const hasCollided = () => lives < 0;
 	return {
 		init,
 		handleKeyPressed,
 		draw,
 		moveSnake,
-		updateSnake,
+		checkCollisions,
+		hasCollided,
 		getScore,
 		getLives,
 		getLevel,
+		getSpeed,
 	};
 };
 export default game;
