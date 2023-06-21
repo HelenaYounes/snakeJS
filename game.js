@@ -2,7 +2,7 @@ import {
 	setNewCoordinates,
 	collision,
 	badPosition,
-	checkCollision,
+	inVicinity,
 } from "./controllers.js";
 
 const canvas = document.getElementById("gameCanvas");
@@ -19,6 +19,12 @@ const rottenImg = new Image();
 rottenImg.src = "./assets/rotten.png";
 
 const snakeHead = {
+	up: new Image(),
+	down: new Image(),
+	left: new Image(),
+	right: new Image(),
+};
+const openHead = {
 	up: new Image(),
 	down: new Image(),
 	left: new Image(),
@@ -51,6 +57,11 @@ snakeHead.up.src = "./assets/head_up.png";
 snakeHead.down.src = "./assets/head_down.png";
 snakeHead.left.src = "./assets/head_left.png";
 snakeHead.right.src = "./assets/head_right.png";
+
+openHead.up.src = "./assets/openup.jpg";
+openHead.down.src = "./assets/opendown.jpg";
+openHead.left.src = "./assets/openleft.jpg";
+openHead.right.src = "./assets/openright.jpg";
 
 snakeTail.up.src = "./assets/tail_down.png";
 snakeTail.down.src = "./assets/tail_up.png";
@@ -85,7 +96,16 @@ const keyEvent = {
 };
 
 const game = (options) => {
-	let apple, bonus, snake, rotten, bonusFlag, score, lives, level, speed;
+	let apple,
+		bonus,
+		snake,
+		rotten,
+		bonusFlag,
+		score,
+		lives,
+		level,
+		speed,
+		mouthOpen;
 
 	const myData = { ...game_defaults, ...options };
 	let { cellSize, width, height } = myData;
@@ -98,6 +118,7 @@ const game = (options) => {
 		lives = 0;
 		level = 1;
 		speed = myData.speed;
+		mouthOpen = false;
 		rotten = setNewCoordinates(canvas, cellSize);
 		rotten.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
@@ -139,7 +160,11 @@ const game = (options) => {
 
 		snake.forEach((body, index) => {
 			if (index === 0) {
-				snakeImage = snakeHead[body.direction];
+				if (mouthOpen) {
+					snakeImage = openHead[body.direction];
+				} else {
+					snakeImage = snakeHead[body.direction];
+				}
 			} else {
 				let prevBody = snake[index - 1];
 				snakeImage = snakeBody[body.direction];
@@ -254,6 +279,9 @@ const game = (options) => {
 			default:
 				break;
 		}
+		mouthOpen =
+			inVicinity(head, apple, cellSize) ||
+			(bonus.active && inVicinity(head, bonus, cellSize));
 		checkCollisions(head);
 	};
 

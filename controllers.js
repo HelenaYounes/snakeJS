@@ -6,6 +6,14 @@ export const checkBounds = (node, canvas) => {
 	let outYaxis = node.y < 0 || node.y > canvas.height;
 	return outXaxis || outYaxis;
 };
+
+export const inVicinity = (node, item, cellSize) => {
+	let withinXaxis =
+		node.x <= item.x + 2 * cellSize && node.x >= item.x - 2 * cellSize;
+	let withinYaxis =
+		node.y <= item.y + 2 * cellSize && node.y >= item.y - 2 * cellSize;
+	return withinXaxis && withinYaxis;
+};
 export const checkCollision = (arr, node) => {
 	return arr.some(collision(node));
 };
@@ -15,8 +23,8 @@ export const badPosition = (arr, node, canvas) => {
 
 export const setNewCoordinates = (canvas, cellSize) => {
 	let randX =
-		Math.floor(Math.random() * (canvas.width / cellSize - 1)) * cellSize;
+		Math.floor(Math.random() * (canvas.width / cellSize - 1 + 1)) * cellSize;
 	let randY =
-		Math.floor(Math.random() * (canvas.height / cellSize - 1)) * cellSize;
+		Math.floor(Math.random() * (canvas.height / cellSize - 1 + 1)) * cellSize;
 	return { x: randX, y: randY };
 };
