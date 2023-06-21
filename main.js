@@ -1,3 +1,4 @@
+import { collision } from "./controllers.js";
 import game from "./game.js";
 
 const custom_options = {
@@ -18,7 +19,16 @@ let highestscore = JSON.parse(localStorage.getItem("highestscore")) || 0;
 highestScoreDiv.textContent = `${highestscore}`;
 let isGameRunning = false;
 const myGame = game(custom_options);
-let { init, draw, moveSnake, getLives, getScore, getLevel, getSpeed } = myGame;
+let {
+	init,
+	draw,
+	moveSnake,
+	getLives,
+	getScore,
+	getLevel,
+	getSpeed,
+	hasCollided,
+} = myGame;
 let gameSpeed = custom_options.speed;
 const reset = () => {
 	clearTimeout(gameTimeout);
@@ -46,10 +56,11 @@ const updateHighScore = () => {
 	localStorage.setItem("highestscore", JSON.stringify(highestscore));
 };
 
-const updateGame = (score, lives, level, speed) => {
-	scoreDiv.textContent = `${score}`;
-	livesDiv.textContent = `${lives}`;
-	levelDiv.textContent = `${level}`;
+const updateGame = () => {
+	let score = getScore();
+	let lives = getLives();
+	let level = getLevel();
+	let speed = getSpeed();
 	if (score > highestscore) {
 		highestscore = score;
 		updateHighScore();
@@ -59,18 +70,18 @@ const updateGame = (score, lives, level, speed) => {
 		clearInterval(gameInterval);
 		gameInterval = setInterval(loop, gameSpeed);
 	}
-	if (lives < 0) {
-		gameOver();
-	}
+	scoreDiv.textContent = `${score}`;
+	livesDiv.textContent = `${lives}`;
+	levelDiv.textContent = `${level}`;
 };
 const loop = () => {
 	draw();
 	moveSnake();
-	let score = getScore();
-	let lives = getLives();
-	let level = getLevel();
-	let speed = getSpeed();
-	updateGame(score, lives, level, speed);
+	if (hasCollided()) {
+		gameOver();
+	} else {
+		updateGame();
+	}
 };
 
 const start = () => {
