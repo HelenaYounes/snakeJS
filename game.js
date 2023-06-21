@@ -10,8 +10,8 @@ const game_defaults = {
 	lives: 0,
 	cellSize: 30,
 };
-const bombImg = new Image();
-bombImg.src = "./assets/bomb.png";
+const rottenImg = new Image();
+rottenImg.src = "./assets/rotten.png";
 
 const snakeHead = {
 	up: new Image(),
@@ -80,7 +80,7 @@ const keyEvent = {
 };
 
 const game = (options) => {
-	let apple, bonus, snake, bomb, bonusFlag, score, lives, level, speed;
+	let apple, bonus, snake, rotten, bonusFlag, score, lives, level, speed;
 
 	const myData = { ...game_defaults, ...options };
 	let { cellSize, width, height } = myData;
@@ -93,8 +93,8 @@ const game = (options) => {
 		lives = 0;
 		level = 1;
 		speed = myData.speed;
-		bomb = setNewCoordinates(canvas, cellSize);
-		bomb.active = false;
+		rotten = setNewCoordinates(canvas, cellSize);
+		rotten.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
 		snake = [setNewCoordinates(canvas, cellSize)];
 		snake[0].direction = myData.direction;
@@ -115,9 +115,9 @@ const game = (options) => {
 		});
 	};
 
-	const drawBomb = () => {
-		if (bomb.active) {
-			ctx.drawImage(bombImg, bomb.x, bomb.y, cellSize, cellSize);
+	const drawRotten = () => {
+		if (rotten.active) {
+			ctx.drawImage(rottenImg, rotten.x, rotten.y, cellSize, cellSize);
 		}
 	};
 	const drawBonus = () => {
@@ -154,7 +154,7 @@ const game = (options) => {
 	const draw = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawApple();
-		drawBomb();
+		drawRotten();
 		drawBonus();
 		drawSnake();
 	};
@@ -162,11 +162,11 @@ const game = (options) => {
 	const updateSnake = (head) => {
 		if (
 			badPosition(snake, head, canvas) ||
-			(collision(head)(bomb) && bomb.active)
+			(collision(head)(rotten) && rotten.active)
 		) {
 			bonusFlag = 0;
 			bonus.active = false;
-			bomb.active = false;
+			rotten.active = false;
 			--lives;
 			if (lives >= 0) {
 				respawn();
@@ -181,7 +181,7 @@ const game = (options) => {
 					++level;
 				}
 				if (level % 2 === 0) {
-					bomb.active = true;
+					rotten.active = true;
 				}
 				if (bonusFlag === 2) {
 					bonus.active = true;
