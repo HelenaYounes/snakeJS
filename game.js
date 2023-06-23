@@ -3,6 +3,7 @@ import {
 	collision,
 	badPosition,
 	inVicinity,
+	createImage,
 } from "./controllers.js";
 
 const canvas = document.getElementById("gameCanvas");
@@ -17,77 +18,50 @@ const game_defaults = {
 };
 
 const snakeHead = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
+	up: createImage("./assets/head_up.png"),
+	down: createImage("./assets/head_down.png"),
+	left: createImage("./assets/head_left.png"),
+	right: createImage("./assets/head_right.png"),
 };
 const openHead = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
+	up: createImage("./assets/openup.png"),
+	down: createImage("./assets/opendown.png"),
+	left: createImage("./assets/openleft.png"),
+	right: createImage("./assets/openright.png"),
 };
-const snakeBody = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
-	rightup: new Image(),
-	rightdown: new Image(),
-	leftup: new Image(),
-	leftdown: new Image(),
-	upright: new Image(),
-	downright: new Image(),
-	upleft: new Image(),
-	downleft: new Image(),
-};
+
 const snakeTail = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
+	up: createImage("./assets/tail_up.png"),
+	down: createImage("./assets/tail_down.png"),
+	left: createImage("./assets/tail_left.png"),
+	right: createImage("./assets/tail_right.png"),
 };
 
-const appleImg = new Image();
-const bonusImg = new Image();
-const rottenImg = new Image();
+const snakeBody = {
+	up: createImage("./assets/body_vertical.png"),
+	down: createImage("./assets/body_vertical.png"),
+	right: createImage("./assets/body_horizontal.png"),
+	left: createImage("./assets/body_horizontal.png"),
+	rightdown: createImage("./assets/body_curve_bottomleft.png"),
+	upleft: createImage("./assets/body_curve_bottomleft.png"),
+	rightup: createImage("./assets/body_curve_topleft.png"),
+	downleft: createImage("./assets/body_curve_topleft.png"),
+	downright: createImage("./assets/body_curve_topright.png"),
+	leftup: createImage("./assets/body_curve_topright.png"),
+	upright: createImage("./assets/body_curve_bottomright.png"),
+	leftdown: createImage("./assets/body_curve_bottomright.png"),
+};
 
-snakeHead.up.src = "./assets/head_up.png";
-snakeHead.down.src = "./assets/head_down.png";
-snakeHead.left.src = "./assets/head_left.png";
-snakeHead.right.src = "./assets/head_right.png";
+const appleThroat = {
+	up: createImage("./assets/apple_throat_up_down.jpg"),
+	down: createImage("./assets/apple_throat_up_down.jpg"),
+	right: createImage("./assets/apple_throat_left_right.jpg"),
+	left: createImage("./assets/apple_throat_left_right.jpg"),
+};
 
-openHead.up.src = "./assets/openup.jpg";
-openHead.down.src = "./assets/opendown.jpg";
-openHead.left.src = "./assets/openleft.jpg";
-openHead.right.src = "./assets/openright.jpg";
-
-snakeTail.up.src = "./assets/tail_down.png";
-snakeTail.down.src = "./assets/tail_up.png";
-snakeTail.right.src = "./assets/tail_left.png";
-snakeTail.left.src = "./assets/tail_right.png";
-
-snakeBody.down.src = "./assets/body_vertical.png";
-snakeBody.up.src = "./assets/body_vertical.png";
-snakeBody.right.src = "./assets/body_horizontal.png";
-snakeBody.left.src = "./assets/body_horizontal.png";
-
-snakeBody.rightdown.src = "./assets/body_bottomleft.png";
-snakeBody.upleft.src = "./assets/body_bottomleft.png";
-
-snakeBody.rightup.src = "./assets/body_topleft.png";
-snakeBody.downleft.src = "./assets/body_topleft.png";
-
-snakeBody.downright.src = "./assets/body_topright.png";
-snakeBody.leftup.src = "./assets/body_topright.png";
-
-snakeBody.upright.src = "./assets/body_bottomright.png";
-snakeBody.leftdown.src = "./assets/body_bottomright.png";
-
-appleImg.src = "./assets/apple.png";
-bonusImg.src = "./assets/bonus.png";
-rottenImg.src = "./assets/rotten.png";
+const appleImg = createImage("./assets/apple.png");
+const bonusImg = createImage("./assets/bonus.png");
+const rottenImg = createImage("./assets/rotten.png");
 
 const keyEvent = {
 	ArrowDown: "down",
@@ -118,6 +92,7 @@ const game = (options) => {
 		tongueOut = !tongueOut;
 	};
 	const init = () => {
+		clearInterval(tongueInterval);
 		canvas.width = width;
 		canvas.height = height;
 		bonusFlag = 0;
@@ -132,7 +107,8 @@ const game = (options) => {
 		snake[0].direction = myData.direction;
 		bonus = setNewCoordinates(canvas, cellSize);
 		bonus.active = false;
-
+		snake[0].isEating = true;
+		tongue = { x: snake[0].x, y: snake[0].y };
 		mouthOpen = false;
 		tongueOut = true;
 		tongueInterval = setInterval(moveTongue, 1000);
@@ -164,46 +140,51 @@ const game = (options) => {
 		ctx.drawImage(appleImg, apple.x, apple.y, cellSize, cellSize);
 	};
 
-	const drawSnake = () => {
-		let snakeImage;
+	const drawTongue = () => {
 		if (!mouthOpen && tongueOut) {
 			ctx.strokeStyle = "red";
 			ctx.lineWidth = 4;
 
 			ctx.beginPath(); // Start a new path
-			ctx.moveTo(tongue.x, tongue.y);
-			let endX = tongue.x;
-			let endY = tongue.y;
+			ctx.moveTo(snake[0].x, snake[0].y);
+			let endX;
+			let endY;
 
 			if (snake[0].direction === "up") {
-				endY -= cellSize;
+				endY = snake[0].y - cellSize;
 			} else if (snake[0].direction === "down") {
-				endY += cellSize;
+				endY = snake[0].y + cellSize;
 			} else if (snake[0].direction === "left") {
-				endX -= cellSize;
+				endX = snake[0].x - cellSize;
 			} else if (snake[0].direction === "right") {
-				endX += cellSize;
+				endX = snake[0].x + cellSize;
 			}
 			ctx.lineTo(endX, endY);
 			ctx.stroke();
 		}
-		snake.forEach((body, index) => {
-			if (index === 0) {
-				if (mouthOpen) {
-					snakeImage = openHead[body.direction];
-				} else {
-					snakeImage = snakeHead[body.direction];
-				}
-			} else {
-				let prevBody = snake[index - 1];
-				snakeImage = snakeBody[body.direction];
+	};
 
-				if (index === snake.length - 1) {
-					snakeImage = snakeTail[body.direction];
+	const drawSnake = () => {
+		let snakeImage;
+		let direction;
+
+		snake.forEach((body, index) => {
+			let isTail = index === snake.length - 1 && index > 0;
+			direction = body.direction;
+			if (index === 0) {
+				snakeImage = mouthOpen ? openHead[direction] : snakeHead[direction];
+			} else {
+				let segAhead = snake[index - 1];
+				if (direction !== segAhead.direction) {
+					direction = `${body.direction}${segAhead.direction}`;
+					body.isEating = false;
 				}
-				if (prevBody.direction !== body.direction) {
-					snakeImage = snakeBody[`${body.direction}${prevBody.direction}`];
-				}
+
+				snakeImage = isTail
+					? snakeTail[segAhead.direction]
+					: body.isEating
+					? appleThroat[direction]
+					: snakeBody[direction];
 			}
 
 			ctx.drawImage(snakeImage, body.x, body.y, cellSize, cellSize);
@@ -221,21 +202,21 @@ const game = (options) => {
 		score += 10;
 		speed -= 10;
 		++bonusFlag;
-		bonus.active = bonusFlag > 1 ? true : false;
+
 		apple = setNewCoordinates(canvas, cellSize);
+
+		snake[0].isEating = true;
+
 		if (score % 3 === 0) {
 			++level;
-		}
-		if (level % 2 === 0) {
-			rotten.active = true;
 		}
 	};
 	const gotBonus = () => {
 		if (bonus.active) {
+			snake[0].isEating = true;
 			++lives;
 			bonusFlag = 0;
 			bonus = setNewCoordinates(canvas, cellSize);
-			bonus.active = false;
 		}
 	};
 
@@ -250,6 +231,8 @@ const game = (options) => {
 				gotBonus();
 			}
 		}
+		rotten.active = level > 0 && level % 2 === 0;
+		bonus.active = bonusFlag > 1;
 	};
 
 	const checkCollisions = (head) => {
@@ -262,6 +245,8 @@ const game = (options) => {
 			bonusFlag = 0;
 			rotten = setNewCoordinates(canvas, cellSize);
 			rotten.active = false;
+			snake.forEach((body) => (body.isEating = false));
+
 			if (lives >= 0) {
 				respawn();
 			} else {
@@ -293,8 +278,12 @@ const game = (options) => {
 	};
 
 	const moveSnake = () => {
-		let head = { x: snake[0].x, y: snake[0].y, direction: myData.direction };
-		tongue = { ...head };
+		let head = {
+			x: snake[0].x,
+			y: snake[0].y,
+			direction: myData.direction,
+			isEating: false,
+		};
 
 		switch (myData.direction) {
 			case "down":

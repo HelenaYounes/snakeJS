@@ -39,7 +39,7 @@ const reset = () => {
 	startPauseDiv.textContent = "NEW GAME";
 	gameSpeed = custom_options.speed;
 	newGame = true;
-	canvasDiv.style.backgroundImage = "url(./assets/fatsnake.jpeg)";
+	// canvasDiv.style.backgroundImage = "url(./assets/fatsnake.jpeg)";
 
 	scoreDiv.textContent = 0;
 	livesDiv.textContent = 0;
