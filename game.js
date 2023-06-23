@@ -3,6 +3,7 @@ import {
 	collision,
 	badPosition,
 	inVicinity,
+	createImage,
 } from "./controllers.js";
 
 const canvas = document.getElementById("gameCanvas");
@@ -17,91 +18,50 @@ const game_defaults = {
 };
 
 const snakeHead = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
+	up: createImage("./assets/head_up.png"),
+	down: createImage("./assets/head_down.png"),
+	left: createImage("./assets/head_left.png"),
+	right: createImage("./assets/head_right.png"),
 };
 const openHead = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
-};
-
-const snakeBody = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
-	rightup: new Image(),
-	rightdown: new Image(),
-	leftup: new Image(),
-	leftdown: new Image(),
-	upright: new Image(),
-	downright: new Image(),
-	upleft: new Image(),
-	downleft: new Image(),
-};
-
-const appleThroat = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
+	up: createImage("./assets/openup.png"),
+	down: createImage("./assets/opendown.png"),
+	left: createImage("./assets/openleft.png"),
+	right: createImage("./assets/openright.png"),
 };
 
 const snakeTail = {
-	up: new Image(),
-	down: new Image(),
-	left: new Image(),
-	right: new Image(),
+	up: createImage("./assets/tail_up.png"),
+	down: createImage("./assets/tail_down.png"),
+	left: createImage("./assets/tail_left.png"),
+	right: createImage("./assets/tail_right.png"),
 };
 
-const appleImg = new Image();
-const bonusImg = new Image();
-const rottenImg = new Image();
+const snakeBody = {
+	up: createImage("./assets/body_vertical.png"),
+	down: createImage("./assets/body_vertical.png"),
+	right: createImage("./assets/body_horizontal.png"),
+	left: createImage("./assets/body_horizontal.png"),
+	rightdown: createImage("./assets/body_curve_bottomleft.png"),
+	upleft: createImage("./assets/body_curve_bottomleft.png"),
+	rightup: createImage("./assets/body_curve_topleft.png"),
+	downleft: createImage("./assets/body_curve_topleft.png"),
+	downright: createImage("./assets/body_curve_topright.png"),
+	leftup: createImage("./assets/body_curve_topright.png"),
+	upright: createImage("./assets/body_curve_bottomright.png"),
+	leftdown: createImage("./assets/body_curve_bottomright.png"),
+};
 
-snakeHead.up.src = "./assets/head_up.png";
-snakeHead.down.src = "./assets/head_down.png";
-snakeHead.left.src = "./assets/head_left.png";
-snakeHead.right.src = "./assets/head_right.png";
+const appleThroat = {
+	up: createImage("./assets/apple_throat_up_down.jpg"),
+	down: createImage("./assets/apple_throat_up_down.jpg"),
+	right: createImage("./assets/apple_throat_left_right.jpg"),
+	left: createImage("./assets/apple_throat_left_right.jpg"),
+};
 
-openHead.up.src = "./assets/openup.jpg";
-openHead.down.src = "./assets/opendown.jpg";
-openHead.left.src = "./assets/openleft.jpg";
-openHead.right.src = "./assets/openright.jpg";
-
-snakeTail.up.src = "./assets/tail_up.png";
-snakeTail.down.src = "./assets/tail_down.png";
-snakeTail.right.src = "./assets/tail_right.png";
-snakeTail.left.src = "./assets/tail_left.png";
-
-snakeBody.down.src = "./assets/body_vertical.png";
-snakeBody.up.src = "./assets/body_vertical.png";
-snakeBody.right.src = "./assets/body_horizontal.png";
-snakeBody.left.src = "./assets/body_horizontal.png";
-
-snakeBody.rightdown.src = "./assets/body_curve_bottomleft.png";
-snakeBody.upleft.src = "./assets/body_curve_bottomleft.png";
-
-snakeBody.downleft.src = "./assets/body_curve_topleft.png";
-snakeBody.rightup.src = "./assets/body_curve_topleft.png";
-
-snakeBody.leftup.src = "./assets/body_curve_topright.png";
-snakeBody.downright.src = "./assets/body_curve_topright.png";
-
-snakeBody.leftdown.src = "./assets/body_curve_bottomright.png";
-snakeBody.upright.src = "./assets/body_curve_bottomright.png";
-
-appleThroat.left.src = "./assets/apple_throat_left_right.jpg";
-appleThroat.right.src = "./assets/apple_throat_left_right.jpg";
-appleThroat.up.src = "./assets/apple_throat_up_down.jpg";
-appleThroat.down.src = "./assets/apple_throat_up_down.jpg";
-
-appleImg.src = "./assets/apple.png";
-bonusImg.src = "./assets/bonus.png";
-rottenImg.src = "./assets/rotten.png";
+const appleImg = createImage("./assets/apple.png");
+const bonusImg = createImage("./assets/bonus.png");
+const rottenImg = createImage("./assets/rotten.png");
 
 const keyEvent = {
 	ArrowDown: "down",

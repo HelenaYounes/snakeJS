@@ -28,3 +28,9 @@ export const setNewCoordinates = (canvas, cellSize) => {
 		Math.floor(Math.random() * (canvas.height / cellSize - 1)) * cellSize;
 	return { x: randX, y: randY };
 };
+
+export const createImage = (src) => {
+	const image = new Image();
+	image.src = src;
+	return image;
+};
