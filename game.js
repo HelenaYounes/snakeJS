@@ -56,14 +56,6 @@ const snakeTail = {
 	down: new Image(),
 	left: new Image(),
 	right: new Image(),
-	rightup: new Image(),
-	rightdown: new Image(),
-	leftup: new Image(),
-	leftdown: new Image(),
-	upright: new Image(),
-	downright: new Image(),
-	upleft: new Image(),
-	downleft: new Image(),
 };
 
 const appleImg = new Image();
@@ -84,18 +76,6 @@ snakeTail.up.src = "./assets/tail_up.png";
 snakeTail.down.src = "./assets/tail_down.png";
 snakeTail.right.src = "./assets/tail_right.png";
 snakeTail.left.src = "./assets/tail_left.png";
-
-snakeTail.leftdown.src = "./assets/tail_left_curve_down.jpg";
-snakeTail.leftup.src = "./assets/tail_left_curve_up.jpg";
-
-snakeTail.downright.src = "./assets/tail_down_curve_right.jpg";
-snakeTail.downleft.src = "./assets/tail_down_curve_left.jpg";
-
-snakeTail.rightup.src = "./assets/tail_right_curve_up.jpg";
-snakeTail.rightdown.src = "./assets/tail_right_curve_down.jpg";
-
-snakeTail.upleft.src = "./assets/tail_up_curve_left.jpg";
-snakeTail.upright.src = "./assets/tail_up_curve_right.jpg";
 
 snakeBody.down.src = "./assets/body_vertical.png";
 snakeBody.up.src = "./assets/body_vertical.png";
@@ -241,7 +221,7 @@ const game = (options) => {
 				}
 
 				snakeImage = isTail
-					? snakeTail[direction]
+					? snakeTail[segAhead.direction]
 					: body.isEating
 					? appleThroat[direction]
 					: snakeBody[direction];
