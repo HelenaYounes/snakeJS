@@ -32,12 +32,22 @@
 	}
 
 
+.jump-animation {	
+	position: absolute;
+	font-weight: bold;
+	font-size: x-large;
+	color: green;
+}
+
+
+
 	canvas {
 	    border: 1px solid black;
         background-image: url('./assets/fatsnake.jpeg');
 		background-size: cover;
 		transition: background-image 1s ease;
 	}
+	
 
 	
 /* Game over message */
@@ -52,6 +62,4 @@
     opacity:0;
 }
 
-img {
-	size: 30px,30px;
-}
+

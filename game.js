@@ -8,6 +8,8 @@ import {
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const scoreSpan = document.getElementById("score");
+
 const game_defaults = {
 	direction: "left",
 	height: 500,
@@ -83,6 +85,7 @@ const game = (options) => {
 		mouthOpen,
 		tongueOut,
 		tongueInterval,
+		appleTimeout,
 		tongue;
 
 	const myData = { ...game_defaults, ...options };
@@ -148,11 +151,11 @@ const game = (options) => {
 	//draw red tongue that goes in and out of snake mouth when not in vicinity of food'
 	const drawTongue = () => {
 		if (!mouthOpen && tongueOut) {
-			//calculate begining tongue coordinates from head
 			tongue = { x: snake[0].x, y: snake[0].y };
 			let endX;
 			let endY;
 
+			//calculate begining tongue coordinates from head origin and add 1/2 cell for end coordinates
 			if (snake[0].direction === "up") {
 				tongue.x += cellSize / 2;
 				endX = tongue.x;
@@ -194,7 +197,7 @@ const game = (options) => {
 			if (index === 0) {
 				snakeImage = mouthOpen ? openHead[direction] : snakeHead[direction];
 			} else {
-				//if change of direction (key pressed)
+				//if change of direction (on key pressed), concatenate new direction to previous one to get curved body
 				let segAhead = snake[index - 1];
 				if (direction !== segAhead.direction) {
 					direction = `${body.direction}${segAhead.direction}`;
@@ -222,9 +225,44 @@ const game = (options) => {
 	};
 
 	const gotApple = () => {
+		clearTimeout(appleTimeout);
 		score += 5;
-		speed -= 10;
+		speed -= 5;
 		++bonusFlag;
+
+		//add apple animation
+
+		// Animate the apple jump
+		const appleElement = document.createElement("div");
+		appleElement.classList.add("jump-animation");
+		appleElement.innerText = "+5";
+		document.body.appendChild(appleElement);
+
+		// Calculate the position of the score span
+		const scoreRect = scoreSpan.getBoundingClientRect();
+		const scoreX = scoreRect.left + scoreRect.width / 2;
+		const scoreY = scoreRect.top + scoreRect.height / 2;
+
+		// Calculate the position of the canvas
+		const canvasRect = canvas.getBoundingClientRect();
+		const canvasX = canvasRect.left + apple.x;
+		const canvasY = canvasRect.top + apple.y;
+
+		// Animate the apple jump from the canvas to the score span
+		appleElement.style.left = canvasX + "px";
+		appleElement.style.top = canvasY + "px";
+		appleElement.style.transition = "all 1s";
+
+		requestAnimationFrame(() => {
+			appleElement.style.left = scoreX + "px";
+			appleElement.style.top = scoreY + "px";
+			appleElement.style.opacity = "0";
+		});
+
+		// Remove the apple element after the animation finishes
+		appleTimeout = setTimeout(() => {
+			appleElement.remove();
+		}, 2000);
 
 		apple = setNewCoordinates(canvas, cellSize);
 
@@ -333,8 +371,8 @@ const game = (options) => {
 				break;
 		}
 		mouthOpen =
-			inVicinity(head, apple, cellSize) ||
-			(bonus.active && inVicinity(head, bonus, cellSize));
+			inVicinity(head, cellSize, apple) ||
+			(bonus.active && inVicinity(head, cellSize, bonus));
 		checkCollisions(head);
 	};
 

@@ -1,3 +1,8 @@
+// add visual effect when hit wall or bad apple
+//add effect when earn bonus life, maybe a little eart on Lives div, tat turn into digit
+
+//have apple jump when caught from canvas to score Div
+
 //check if there is collision between 2 given cells
 export const collision = (node) => (item) =>
 	node.x === item.x && node.y === item.y;
@@ -10,7 +15,7 @@ export const checkBounds = (node, canvas) => {
 };
 
 //check if a cell/square is within a given distance of another cell/square
-export const inVicinity = (node, item, cellSize) => {
+export const inVicinity = (node, cellSize, item) => {
 	let withinXaxis =
 		node.x <= item.x + 2 * cellSize && node.x >= item.x - 2 * cellSize;
 	let withinYaxis =
