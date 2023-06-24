@@ -9,6 +9,9 @@ import {
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreSpan = document.getElementById("score");
+const countdownWrapper = document.getElementById("countdown_wrapper");
+countdownWrapper.style.display = "none";
+const countdownSpan = document.getElementById("countdown");
 
 const game_defaults = {
 	direction: "left",
@@ -78,7 +81,6 @@ const game = (options) => {
 		bonus,
 		snake,
 		rotten,
-		bonusFlag,
 		score,
 		lives,
 		level,
@@ -87,8 +89,11 @@ const game = (options) => {
 		tongueOut,
 		tongueInterval,
 		appleTimeout,
+		bonusTimeout,
 		collisionTimeout,
 		died,
+		bonusCountdown,
+		bonusInterval,
 		tongue;
 
 	const myData = { ...game_defaults, ...options };
@@ -101,10 +106,11 @@ const game = (options) => {
 		clearInterval(tongueInterval);
 		canvas.width = width;
 		canvas.height = height;
-		bonusFlag = 0;
+
 		score = 0;
 		lives = 0;
 		level = 0;
+		bonusCountdown = 5;
 		speed = myData.speed;
 		rotten = setNewCoordinates(canvas, cellSize);
 		rotten.active = false;
@@ -123,9 +129,14 @@ const game = (options) => {
 		mouthOpen = false;
 		tongueOut = true;
 		tongueInterval = setInterval(moveTongue, 1000);
+		bonusInterval = setInterval(
+			activateBonus,
+			Math.floor(Math.random() * (13 - 6) + 6) * 1000
+		);
 	};
 	const respawn = () => {
 		clearTimeout(collisionTimeout);
+
 		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
 		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
 
@@ -138,6 +149,26 @@ const game = (options) => {
 		});
 		myData.direction = snake[0].direction;
 		died = false;
+		tongueInterval = setInterval(moveTongue, 1000);
+		bonusInterval = setInterval(
+			activateBonus,
+			Math.floor(Math.random() * (13 - 6) + 6) * 1000
+		);
+	};
+	const stopBonusCountdown = () => {
+		bonus.active = false;
+		bonus = setNewCoordinates(canvas, cellSize);
+		countdownWrapper.style.display = "none";
+	};
+	const updateCountDown = () => {
+		clearTimeout(bonusTimeout);
+		countdownSpan.textContent = bonusCountdown;
+		if (bonusCountdown === 0) {
+			stopBonusCountdown();
+		} else {
+			bonusCountdown--;
+			bonusTimeout = setTimeout(updateCountDown, 1000);
+		}
 	};
 
 	const drawRotten = () => {
@@ -256,7 +287,6 @@ const game = (options) => {
 		clearTimeout(appleTimeout);
 		score += 5;
 		speed -= 5;
-		++bonusFlag;
 
 		//add apple animation
 
@@ -300,14 +330,23 @@ const game = (options) => {
 			++level;
 		}
 	};
+
+	//Bonus apples are activated at every 6 to 12 sec;
+	const activateBonus = () => {
+		if (!bonus.active) {
+			bonus.active = true;
+			bonusCountdown = 5;
+			countdownWrapper.style.display = "block";
+			updateCountDown();
+		}
+	};
+
 	const gotBonus = () => {
-		//bonus life, only available when bonusFlag = 3 (every 3 apples caught)
-		//bonusFlag is reset when bonus life is caught
-		if (bonus.active) {
+		if (bonus.active && bonusCountdown > 0) {
+			clearTimeout(bonusTimeout);
+			stopBonusCountdown();
 			snake[0].isEating = true;
 			++lives;
-			bonusFlag = 0;
-			bonus = setNewCoordinates(canvas, cellSize);
 		}
 	};
 
@@ -324,7 +363,6 @@ const game = (options) => {
 			}
 		}
 		rotten.active = level > 0 && level % 2 === 0;
-		bonus.active = bonusFlag > 2;
 	};
 
 	const checkCollisions = (head) => {
@@ -335,18 +373,19 @@ const game = (options) => {
 			died = true;
 			--lives;
 			score -= 10;
-			bonusFlag = 0;
+
 			speed += 5;
 			rotten = setNewCoordinates(canvas, cellSize);
 			rotten.active = false;
 			snake.forEach((body) => (body.isEating = false));
+			clearInterval(tongueInterval);
+			clearInterval(bonusInterval);
 
 			if (lives >= 0) {
 				//pause snake movement and reposition snake after 1 sec
 				myData.direction = "stop";
 				collisionTimeout = setTimeout(respawn, 1000);
 			} else {
-				clearInterval(tongueInterval);
 			}
 		} else {
 			snake.unshift(head);
@@ -384,21 +423,16 @@ const game = (options) => {
 		switch (myData.direction) {
 			case "down":
 				head.y += cellSize;
-
 				break;
 			case "up":
 				head.y -= cellSize;
-
 				break;
 			case "right":
 				head.x += cellSize;
-
 				break;
 			case "left":
 				head.x -= cellSize;
-
 				break;
-
 			default:
 				return;
 		}

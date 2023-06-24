@@ -3,6 +3,24 @@
 
 //have apple jump when caught from canvas to score Div
 
+//add menu dropdown, can change backgroud image, snake color,
+
+//bonus apple disapears after timeout with div showing remaining time
+
+// make curried function that makes a given property of a given object set to true/false
+
+//partially applied function, like caught Apple/bonus
+// or activate rotten/bonus like :
+// activateItaem = fn => (...args) => {
+// return fn(...args)
+// }
+
+// const activate =
+// 	(fn) =>
+// 	(...args) => {
+// 		fn(...args);
+// 	};
+
 //check if there is collision between 2 given cells
 export const collision = (node) => (item) =>
 	node.x === item.x && node.y === item.y;
@@ -36,9 +54,9 @@ export const badPosition = (arr, node, canvas) => {
 //give randown x and y coordinates, withing canvas area
 export const setNewCoordinates = (canvas, cellSize) => {
 	let randX =
-		Math.floor(Math.random() * (canvas.width / cellSize - 1)) * cellSize;
+		Math.floor(Math.random() * (canvas.width / cellSize - 2) + 1) * cellSize;
 	let randY =
-		Math.floor(Math.random() * (canvas.height / cellSize - 1)) * cellSize;
+		Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
 	return { x: randX, y: randY };
 };
 
