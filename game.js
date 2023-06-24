@@ -113,7 +113,7 @@ const game = (options) => {
 		bonus = setNewCoordinates(canvas, cellSize);
 		bonus.active = false;
 		snake[0].isEating = true;
-		tongue = { x: snake[0].x, y: snake[0].y };
+
 		mouthOpen = false;
 		tongueOut = true;
 		tongueInterval = setInterval(moveTongue, 1000);
@@ -148,23 +148,37 @@ const game = (options) => {
 	//draw red tongue that goes in and out of snake mouth when not in vicinity of food'
 	const drawTongue = () => {
 		if (!mouthOpen && tongueOut) {
+			//calculate begining tongue coordinates from head
+			tongue = { x: snake[0].x, y: snake[0].y };
+			let endX;
+			let endY;
+
+			if (snake[0].direction === "up") {
+				tongue.x += cellSize / 2;
+				endX = tongue.x;
+
+				endY = tongue.y - cellSize / 2;
+			} else if (snake[0].direction === "down") {
+				tongue.x += cellSize / 2;
+				endX = tongue.x;
+				tongue.y += cellSize;
+				endY = tongue.y + cellSize / 2;
+			} else if (snake[0].direction === "left") {
+				tongue.y += cellSize / 2;
+				endY = tongue.y;
+
+				endX = tongue.x - cellSize / 2;
+			} else if (snake[0].direction === "right") {
+				tongue.y += cellSize / 2;
+				endY = tongue.y;
+				tongue.x += cellSize;
+				endX = tongue.x + cellSize / 2;
+			}
 			ctx.strokeStyle = "red";
 			ctx.lineWidth = 4;
 
 			ctx.beginPath(); // Start a new path
 			ctx.moveTo(tongue.x, tongue.y);
-			let endX = tongue.x;
-			let endY = tongue.y;
-
-			if (snake[0].direction === "up") {
-				endY = tongue.y - cellSize / 2;
-			} else if (snake[0].direction === "down") {
-				endY = tongue.y + cellSize / 2;
-			} else if (snake[0].direction === "left") {
-				endX = tongue.x - cellSize / 2;
-			} else if (snake[0].direction === "right") {
-				endX = tongue.x + cellSize / 2;
-			}
 			ctx.lineTo(endX, endY);
 			ctx.stroke();
 		}
@@ -180,6 +194,7 @@ const game = (options) => {
 			if (index === 0) {
 				snakeImage = mouthOpen ? openHead[direction] : snakeHead[direction];
 			} else {
+				//if change of direction (key pressed)
 				let segAhead = snake[index - 1];
 				if (direction !== segAhead.direction) {
 					direction = `${body.direction}${segAhead.direction}`;
@@ -205,8 +220,9 @@ const game = (options) => {
 		drawBonus();
 		drawSnake();
 	};
+
 	const gotApple = () => {
-		score += 10;
+		score += 5;
 		speed -= 10;
 		++bonusFlag;
 
@@ -219,6 +235,8 @@ const game = (options) => {
 		}
 	};
 	const gotBonus = () => {
+		//bonus life, only available when bonusFlag = 3 (every 3 apples caught)
+		//bonusFlag is reset when bonus life is caught
 		if (bonus.active) {
 			snake[0].isEating = true;
 			++lives;
@@ -227,6 +245,7 @@ const game = (options) => {
 		}
 	};
 
+	//check if snake caught food, if got apple, increment score and speed, if not, snake array pops.
 	const caughtFood = (head) => {
 		let foods = [apple, bonus];
 		let res = foods.find((food) => food.x === head.x && food.y === head.y);
@@ -239,7 +258,7 @@ const game = (options) => {
 			}
 		}
 		rotten.active = level > 0 && level % 2 === 0;
-		bonus.active = bonusFlag > 1;
+		bonus.active = bonusFlag > 2;
 	};
 
 	const checkCollisions = (head) => {
@@ -250,6 +269,7 @@ const game = (options) => {
 			--lives;
 			score -= 10;
 			bonusFlag = 0;
+			speed += 5;
 			rotten = setNewCoordinates(canvas, cellSize);
 			rotten.active = false;
 			snake.forEach((body) => (body.isEating = false));
@@ -295,25 +315,19 @@ const game = (options) => {
 		switch (myData.direction) {
 			case "down":
 				head.y += cellSize;
-				tongue.y = head.y + cellSize;
-				tongue.x = head.x + cellSize / 2;
 
 				break;
 			case "up":
 				head.y -= cellSize;
-				tongue.y = head.y;
-				tongue.x = head.x + cellSize / 2;
+
 				break;
 			case "right":
 				head.x += cellSize;
-				tongue.x = head.x + cellSize;
-				tongue.y = head.y + cellSize / 2;
 
 				break;
 			case "left":
 				head.x -= cellSize;
-				tongue.x = head.x;
-				tongue.y = head.y + cellSize / 2;
+
 				break;
 			default:
 				break;
