@@ -103,7 +103,12 @@ const game = (options) => {
 		rotten = setNewCoordinates(canvas, cellSize);
 		rotten.active = false;
 		apple = setNewCoordinates(canvas, cellSize);
-		snake = [setNewCoordinates(canvas, cellSize)];
+		snake = [
+			{
+				x: Math.floor(canvas.width / (2 * cellSize)) * cellSize,
+				y: Math.floor(canvas.height / (2 * cellSize)) * cellSize,
+			},
+		];
 		snake[0].direction = myData.direction;
 		bonus = setNewCoordinates(canvas, cellSize);
 		bonus.active = false;
@@ -140,24 +145,25 @@ const game = (options) => {
 		ctx.drawImage(appleImg, apple.x, apple.y, cellSize, cellSize);
 	};
 
+	//draw red tongue that goes in and out of snake mouth when not in vicinity of food'
 	const drawTongue = () => {
 		if (!mouthOpen && tongueOut) {
 			ctx.strokeStyle = "red";
 			ctx.lineWidth = 4;
 
 			ctx.beginPath(); // Start a new path
-			ctx.moveTo(snake[0].x, snake[0].y);
-			let endX;
-			let endY;
+			ctx.moveTo(tongue.x, tongue.y);
+			let endX = tongue.x;
+			let endY = tongue.y;
 
 			if (snake[0].direction === "up") {
-				endY = snake[0].y - cellSize;
+				endY = tongue.y - cellSize / 2;
 			} else if (snake[0].direction === "down") {
-				endY = snake[0].y + cellSize;
+				endY = tongue.y + cellSize / 2;
 			} else if (snake[0].direction === "left") {
-				endX = snake[0].x - cellSize;
+				endX = tongue.x - cellSize / 2;
 			} else if (snake[0].direction === "right") {
-				endX = snake[0].x + cellSize;
+				endX = tongue.x + cellSize / 2;
 			}
 			ctx.lineTo(endX, endY);
 			ctx.stroke();
@@ -193,6 +199,7 @@ const game = (options) => {
 
 	const draw = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		drawTongue();
 		drawApple();
 		drawRotten();
 		drawBonus();
