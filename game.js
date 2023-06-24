@@ -62,6 +62,7 @@ const appleThroat = {
 };
 
 const appleImg = createImage("./assets/apple.png");
+const explosionImg = createImage("./assets/explosion.png");
 const bonusImg = createImage("./assets/bonus.png");
 const rottenImg = createImage("./assets/rotten.png");
 
@@ -86,6 +87,8 @@ const game = (options) => {
 		tongueOut,
 		tongueInterval,
 		appleTimeout,
+		collisionTimeout,
+		died,
 		tongue;
 
 	const myData = { ...game_defaults, ...options };
@@ -116,12 +119,13 @@ const game = (options) => {
 		bonus = setNewCoordinates(canvas, cellSize);
 		bonus.active = false;
 		snake[0].isEating = true;
-
+		died = false;
 		mouthOpen = false;
 		tongueOut = true;
 		tongueInterval = setInterval(moveTongue, 1000);
 	};
 	const respawn = () => {
+		clearTimeout(collisionTimeout);
 		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
 		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
 
@@ -132,6 +136,8 @@ const game = (options) => {
 			body.x = body.x - dx;
 			body.y = body.y - dy;
 		});
+		myData.direction = snake[0].direction;
+		died = false;
 	};
 
 	const drawRotten = () => {
@@ -186,6 +192,25 @@ const game = (options) => {
 			ctx.stroke();
 		}
 	};
+	const changeColor = (body) => {
+		// Get the pixel data of the image
+
+		const imageData = ctx.getImageData(body.x, body.y, cellSize, cellSize);
+		const data = imageData.data;
+
+		// Loop through each pixel and modify its color
+		for (let i = 0; i < data.length; i += 4) {
+			// Modify the RGB values of each pixel
+			// For example, set the red component to 255 (maximum value) to change it to red
+			data[i] = 255; // Red component
+			data[i + 1] = 0; // Green component
+			data[i + 2] = 0; // Blue component
+			// The fourth component is the alpha channel (transparency), so it's left unchanged
+		}
+
+		// Put the modified pixel data back onto the canvas
+		ctx.putImageData(imageData, body.x, body.y);
+	};
 
 	const drawSnake = () => {
 		let snakeImage;
@@ -212,6 +237,9 @@ const game = (options) => {
 			}
 
 			ctx.drawImage(snakeImage, body.x, body.y, cellSize, cellSize);
+			if (died) {
+				changeColor(body);
+			}
 		});
 	};
 
@@ -304,6 +332,7 @@ const game = (options) => {
 			badPosition(snake, head, canvas) ||
 			(collision(head)(rotten) && rotten.active)
 		) {
+			died = true;
 			--lives;
 			score -= 10;
 			bonusFlag = 0;
@@ -313,7 +342,9 @@ const game = (options) => {
 			snake.forEach((body) => (body.isEating = false));
 
 			if (lives >= 0) {
-				respawn();
+				//pause snake movement and reposition snake after 1 sec
+				myData.direction = "stop";
+				collisionTimeout = setTimeout(respawn, 1000);
 			} else {
 				clearInterval(tongueInterval);
 			}
@@ -367,8 +398,9 @@ const game = (options) => {
 				head.x -= cellSize;
 
 				break;
+
 			default:
-				break;
+				return;
 		}
 		mouthOpen =
 			inVicinity(head, cellSize, apple) ||
