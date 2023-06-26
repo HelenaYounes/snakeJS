@@ -127,7 +127,8 @@ export const stopIntervals = (...args) => {
 };
 // export let timeout;
 
-export const animations = (obj, timeout) => {
+export const animations = (obj, timeout) => () => {
+	clearTimeout(timeout);
 	const appleElement = document.createElement("div");
 	appleElement.classList.add("jump-animation");
 	appleElement.innerText = "+5";
@@ -158,8 +159,24 @@ export const animations = (obj, timeout) => {
 		appleElement.remove();
 	}, 2000);
 };
-// export const requestAnimationFrame = () => {
-// 	appleElement.style.left = scoreX + "px";
-// 	appleElement.style.top = scoreY + "px";
-// 	appleElement.style.opacity = "0";
-// };
+
+export const changeColor = () => (body) => {
+	let { x, y } = body;
+	// Get the pixel data of the image
+
+	const imageData = ctx.getImageData(x, y, cellSize, cellSize);
+	const data = imageData.data;
+
+	// Loop through each pixel and modify its color
+	for (let i = 0; i < data.length; i += 4) {
+		// Modify the RGB values of each pixel
+		// For example, set the red component to 255 (maximum value) to change it to red
+		data[i] = 255; // Red component
+		data[i + 1] = 0; // Green component
+		data[i + 2] = 0; // Blue component
+		// The fourth component is the alpha channel (transparency), so it's left unchanged
+	}
+
+	// Put the modified pixel data back onto the canvas
+	ctx.putImageData(imageData, x, y);
+};

@@ -18,6 +18,7 @@ import {
 	default_params,
 	animations,
 	foods,
+	changeColor,
 } from "./controllers.js";
 
 const game = (options) => {
@@ -107,7 +108,7 @@ const game = (options) => {
 			bonusTimeout = setTimeout(updateCountDown, 1000);
 		}
 	};
-
+	const changeColorSnake = changeColor();
 	const drawFoods = (...args) => {
 		args.forEach(({ x, y, img, active }) => {
 			if (active) {
@@ -164,26 +165,6 @@ const game = (options) => {
 			ctx.stroke();
 		}
 	};
-	const changeColor = (body) => {
-		let { x, y } = body;
-		// Get the pixel data of the image
-
-		const imageData = ctx.getImageData(x, y, cellSize, cellSize);
-		const data = imageData.data;
-
-		// Loop through each pixel and modify its color
-		for (let i = 0; i < data.length; i += 4) {
-			// Modify the RGB values of each pixel
-			// For example, set the red component to 255 (maximum value) to change it to red
-			data[i] = 255; // Red component
-			data[i + 1] = 0; // Green component
-			data[i + 2] = 0; // Blue component
-			// The fourth component is the alpha channel (transparency), so it's left unchanged
-		}
-
-		// Put the modified pixel data back onto the canvas
-		ctx.putImageData(imageData, x, y);
-	};
 
 	const drawSnake = () => {
 		let snakeImage;
@@ -211,7 +192,7 @@ const game = (options) => {
 
 			ctx.drawImage(snakeImage, body.x, body.y, cellSize, cellSize);
 			if (died) {
-				changeColor(body);
+				changeColorSnake(body);
 			}
 		});
 	};
@@ -222,12 +203,9 @@ const game = (options) => {
 		drawFoods(bonus, apple, rotten);
 		drawSnake();
 	};
-	const appleAnimation = () => {
-		return animations(apple, appleTimeout);
-	};
+	const appleAnimation = animations(apple, appleTimeout);
 
 	const gotApple = () => {
-		clearTimeout(appleTimeout);
 		appleAnimation();
 
 		apple = { ...apple, ...setNewCoordinates(canvas) };
