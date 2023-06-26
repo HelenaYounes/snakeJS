@@ -3,7 +3,6 @@ import {
 	ctx,
 	center,
 	cellSize,
-	scoreSpan,
 	countdownSpan,
 	countdownWrapper,
 	snakeBody,
@@ -19,6 +18,7 @@ import {
 	toggle,
 	default_params,
 	stopIntervals,
+	animations,
 	foods,
 } from "./controllers.js";
 
@@ -26,7 +26,6 @@ const game = (options) => {
 	let mouthOpen,
 		tongueOut,
 		tongueInterval,
-		appleTimeout,
 		bonusTimeout,
 		collisionTimeout,
 		died,
@@ -43,8 +42,10 @@ const game = (options) => {
 	canvas.height = height;
 
 	const startIntervals = () => {
+		clearInterval(tongueInterval);
+		clearInterval(bonusInterval);
 		tongueInterval = setInterval(() => {
-			toggle(tongueOut);
+			tongueOut = !tongueOut;
 		}, 1000);
 		bonusInterval = setInterval(
 			activateBonus,
@@ -59,7 +60,6 @@ const game = (options) => {
 		[apple, rotten, bonus].forEach((el) => {
 			el = { ...el, ...setNewCoordinates(canvas) };
 		});
-		stopIntervals(bonusInterval, tongueInterval);
 		countdownWrapper.style.display = "none";
 		bonusCountdown = 5;
 		snake = [
@@ -82,7 +82,6 @@ const game = (options) => {
 
 	const respawn = () => {
 		clearTimeout(collisionTimeout);
-		stopIntervals(bonusInterval, tongueInterval);
 		let dx = snake[0].x - center(width);
 		let dy = snake[0].y - center(height);
 
@@ -226,47 +225,16 @@ const game = (options) => {
 	};
 
 	const gotApple = () => {
-		clearTimeout(appleTimeout);
+		animations(apple);
+
+		apple = { ...apple, ...setNewCoordinates(canvas) };
+		snake[0].isEating = true;
 		score += 5;
 		speed -= 5;
 
 		//add apple animation
 
 		// Animate the apple jump
-		const appleElement = document.createElement("div");
-		appleElement.classList.add("jump-animation");
-		appleElement.innerText = "+5";
-		document.body.appendChild(appleElement);
-
-		// Calculate the position of the score span
-		const scoreRect = scoreSpan.getBoundingClientRect();
-		const scoreX = scoreRect.left + scoreRect.width / 2;
-		const scoreY = scoreRect.top + scoreRect.height / 2;
-
-		// Calculate the position of the canvas
-		const canvasRect = canvas.getBoundingClientRect();
-		const canvasX = canvasRect.left + apple.x;
-		const canvasY = canvasRect.top + apple.y;
-
-		// Animate the apple jump from the canvas to the score span
-		appleElement.style.left = canvasX + "px";
-		appleElement.style.top = canvasY + "px";
-		appleElement.style.transition = "all 1s";
-
-		requestAnimationFrame(() => {
-			appleElement.style.left = scoreX + "px";
-			appleElement.style.top = scoreY + "px";
-			appleElement.style.opacity = "0";
-		});
-
-		// Remove the apple element after the animation finishes
-		appleTimeout = setTimeout(() => {
-			appleElement.remove();
-		}, 2000);
-
-		apple = { ...apple, ...setNewCoordinates(canvas) };
-
-		snake[0].isEating = true;
 
 		if (score % 3 === 0) {
 			++level;

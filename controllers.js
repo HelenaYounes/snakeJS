@@ -119,9 +119,48 @@ export const badPosition = (arr, node, canvas) => {
 };
 
 export const toggle = (item) => {
-	item = !item;
+	return !item;
 };
 
 export const stopIntervals = (...args) => {
 	args.forEach((el) => clearInterval(el));
 };
+export let timeout;
+export const animations = (obj) => {
+	clearTimeout(timeout);
+	const appleElement = document.createElement("div");
+	appleElement.classList.add("jump-animation");
+	appleElement.innerText = "+5";
+	document.body.appendChild(appleElement);
+
+	// Calculate the position of the score span
+	const scoreRect = scoreSpan.getBoundingClientRect();
+	const scoreX = scoreRect.left + scoreRect.width / 2;
+	const scoreY = scoreRect.top + scoreRect.height / 2;
+
+	// Calculate the position of the canvas
+	const canvasRect = canvas.getBoundingClientRect();
+	const canvasX = canvasRect.left + obj.x;
+	const canvasY = canvasRect.top + obj.y;
+
+	// Animate the apple jump from the canvas to the score span
+	appleElement.style.left = canvasX + "px";
+	appleElement.style.top = canvasY + "px";
+	appleElement.style.transition = "all 1s";
+
+	// Remove the apple element after the animation finishes
+	requestAnimationFrame(() => {
+		appleElement.style.left = scoreX + "px";
+		appleElement.style.top = scoreY + "px";
+		appleElement.style.opacity = "0";
+	});
+	let appleTimeout = setTimeout(() => {
+		appleElement.remove();
+	}, 2000);
+	timeout = appleTimeout;
+};
+// export const requestAnimationFrame = () => {
+// 	appleElement.style.left = scoreX + "px";
+// 	appleElement.style.top = scoreY + "px";
+// 	appleElement.style.opacity = "0";
+// };
