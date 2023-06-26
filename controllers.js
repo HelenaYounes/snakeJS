@@ -1,26 +1,93 @@
-// add visual effect when hit wall or bad apple
-//add effect when earn bonus life, maybe a little eart on Lives div, tat turn into digit
+export const canvas = document.getElementById("gameCanvas");
+export const ctx = canvas.getContext("2d");
+export const scoreSpan = document.getElementById("score");
+export const countdownWrapper = document.getElementById("countdown_wrapper");
 
-//have apple jump when caught from canvas to score Div
+export const countdownSpan = document.getElementById("countdown");
+export const cellSize = 30;
+export const default_params = {
+	height: 500,
+	direction: "left",
+	width: 400,
+	speed: 150,
+};
 
-//add menu dropdown, can change backgroud image, snake color,
+//give randown x and y coordinates, withing canvas area
+export const setNewCoordinates = (canvas) => {
+	let randX =
+		Math.floor(Math.random() * (canvas.width / cellSize - 2) + 1) * cellSize;
+	let randY =
+		Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
+	return { x: randX, y: randY };
+};
 
-//bonus apple disapears after timeout with div showing remaining time
+export const center = (val) => Math.floor(val / (2 * cellSize)) * cellSize;
 
-// make curried function that makes a given property of a given object set to true/false
+//create image, and argument as the image source
+export const createImage = (src) => {
+	const image = new Image();
+	image.src = src;
+	return image;
+};
 
-//partially applied function, like caught Apple/bonus
-// or activate rotten/bonus like :
-// activateItaem = fn => (...args) => {
-// return fn(...args)
-// }
+export const snakeHead = {
+	up: createImage("./assets/head_up.png"),
+	down: createImage("./assets/head_down.png"),
+	left: createImage("./assets/head_left.png"),
+	right: createImage("./assets/head_right.png"),
+};
+export const openHead = {
+	up: createImage("./assets/openup.png"),
+	down: createImage("./assets/opendown.png"),
+	left: createImage("./assets/openleft.png"),
+	right: createImage("./assets/openright.png"),
+};
 
-// const activate =
-// 	(fn) =>
-// 	(...args) => {
-// 		fn(...args);
-// 	};
+export const snakeTail = {
+	up: createImage("./assets/tail_up.png"),
+	down: createImage("./assets/tail_down.png"),
+	left: createImage("./assets/tail_left.png"),
+	right: createImage("./assets/tail_right.png"),
+};
 
+export const snakeBody = {
+	up: createImage("./assets/body_vertical.png"),
+	down: createImage("./assets/body_vertical.png"),
+	right: createImage("./assets/body_horizontal.png"),
+	left: createImage("./assets/body_horizontal.png"),
+	rightdown: createImage("./assets/body_curve_bottomleft.png"),
+	upleft: createImage("./assets/body_curve_bottomleft.png"),
+	rightup: createImage("./assets/body_curve_topleft.png"),
+	downleft: createImage("./assets/body_curve_topleft.png"),
+	downright: createImage("./assets/body_curve_topright.png"),
+	leftup: createImage("./assets/body_curve_topright.png"),
+	upright: createImage("./assets/body_curve_bottomright.png"),
+	leftdown: createImage("./assets/body_curve_bottomright.png"),
+};
+
+export const appleThroat = {
+	up: createImage("./assets/apple_throat_up_down.jpg"),
+	down: createImage("./assets/apple_throat_up_down.jpg"),
+	right: createImage("./assets/apple_throat_left_right.jpg"),
+	left: createImage("./assets/apple_throat_left_right.jpg"),
+};
+
+export const images = {
+	apple: createImage("./assets/apple.png"),
+	bonus: createImage("./assets/bonus.png"),
+	rotten: createImage("./assets/rotten.png"),
+};
+export const foods = {
+	apple: { ...setNewCoordinates(canvas), img: images.apple, active: true },
+	bonus: { ...setNewCoordinates(canvas), img: images.bonus, active: false },
+	rotten: { ...setNewCoordinates(canvas), img: images.rotten, active: false },
+};
+export const keyEvent = {
+	ArrowDown: "down",
+	ArrowUp: "up",
+	ArrowLeft: "left",
+	ArrowRight: "right",
+};
 //check if there is collision between 2 given cells
 export const collision = (node) => (item) =>
 	node.x === item.x && node.y === item.y;
@@ -51,18 +118,10 @@ export const badPosition = (arr, node, canvas) => {
 	return checkBounds(node, canvas) || checkCollision(arr, node);
 };
 
-//give randown x and y coordinates, withing canvas area
-export const setNewCoordinates = (canvas, cellSize) => {
-	let randX =
-		Math.floor(Math.random() * (canvas.width / cellSize - 2) + 1) * cellSize;
-	let randY =
-		Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
-	return { x: randX, y: randY };
+export const toggle = (item) => {
+	item = !item;
 };
 
-//create image, and argument as the image source
-export const createImage = (src) => {
-	const image = new Image();
-	image.src = src;
-	return image;
+export const stopIntervals = (...args) => {
+	args.forEach((el) => clearInterval(el));
 };
