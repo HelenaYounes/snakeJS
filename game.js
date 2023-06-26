@@ -15,9 +15,7 @@ import {
 	badPosition,
 	inVicinity,
 	openHead,
-	toggle,
 	default_params,
-	stopIntervals,
 	animations,
 	foods,
 } from "./controllers.js";
@@ -29,6 +27,7 @@ const game = (options) => {
 		bonusTimeout,
 		collisionTimeout,
 		died,
+		appleTimeout,
 		bonusCountdown,
 		bonusInterval,
 		score,
@@ -223,9 +222,13 @@ const game = (options) => {
 		drawFoods(bonus, apple, rotten);
 		drawSnake();
 	};
+	const appleAnimation = () => {
+		return animations(apple, appleTimeout);
+	};
 
 	const gotApple = () => {
-		animations(apple);
+		clearTimeout(appleTimeout);
+		appleAnimation();
 
 		apple = { ...apple, ...setNewCoordinates(canvas) };
 		snake[0].isEating = true;

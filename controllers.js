@@ -125,9 +125,9 @@ export const toggle = (item) => {
 export const stopIntervals = (...args) => {
 	args.forEach((el) => clearInterval(el));
 };
-export let timeout;
-export const animations = (obj) => {
-	clearTimeout(timeout);
+// export let timeout;
+
+export const animations = (obj, timeout) => {
 	const appleElement = document.createElement("div");
 	appleElement.classList.add("jump-animation");
 	appleElement.innerText = "+5";
@@ -154,10 +154,9 @@ export const animations = (obj) => {
 		appleElement.style.top = scoreY + "px";
 		appleElement.style.opacity = "0";
 	});
-	let appleTimeout = setTimeout(() => {
+	timeout = setTimeout(() => {
 		appleElement.remove();
 	}, 2000);
-	timeout = appleTimeout;
 };
 // export const requestAnimationFrame = () => {
 // 	appleElement.style.left = scoreX + "px";
