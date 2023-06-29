@@ -12,12 +12,14 @@ import {
 } from "./constants.js";
 
 import {
+	drawItems,
 	collision,
 	inVicinity,
 	badPosition,
 	setNewCoordinates,
 } from "./utils.js";
 
+//do I keep score , level ... in object, or can i set up as single vars
 const game_defaults = {
 	direction: "left",
 	height: 500,
@@ -71,8 +73,8 @@ const game = (options, elements) => {
 	const init = () => {
 		myData = { ...game_defaults, ...options };
 
-		canvas.width = options.width || game_defaults.width;
-		canvas.height = options.height || game_defaults.height;
+		canvas.width = myData.width;
+		canvas.height = myData.height;
 
 		snake = [
 			{
@@ -86,14 +88,24 @@ const game = (options, elements) => {
 			...setNewCoordinates(canvas, cellSize),
 			countdown: 5,
 			active: false,
+			img: bonusImg,
 		};
-		apple = { ...setNewCoordinates(canvas, cellSize), active: true };
-		rotten = { ...setNewCoordinates(canvas, cellSize), active: false };
+		apple = {
+			...setNewCoordinates(canvas, cellSize),
+			active: true,
+			img: appleImg,
+		};
+		rotten = {
+			...setNewCoordinates(canvas, cellSize),
+			active: false,
+			img: rottenImg,
+		};
 		animation = true;
 		newGame = true;
 		clearInterval(tongueInterval);
 		clearInterval(bonusInterval);
 	};
+
 	const respawn = () => {
 		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
 		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
@@ -109,7 +121,7 @@ const game = (options, elements) => {
 	};
 	const stopBonusCountdown = () => {
 		bonus.active = false;
-		bonus = setNewCoordinates(canvas, cellSize);
+		bonus = { ...bonus, ...setNewCoordinates(canvas, cellSize) };
 		// countdownWrapper.style.display = "none";
 	};
 	const updateCountDown = () => {
@@ -123,19 +135,14 @@ const game = (options, elements) => {
 		}
 	};
 
-	const drawRotten = () => {
-		if (rotten.active) {
-			ctx.drawImage(rottenImg, rotten.x, rotten.y, cellSize, cellSize);
-		}
-	};
-	const drawBonus = () => {
-		if (bonus.active) {
-			ctx.drawImage(bonusImg, bonus.x, bonus.y, cellSize, cellSize);
-		}
-	};
-	const drawApple = () => {
-		ctx.drawImage(appleImg, apple.x, apple.y, cellSize, cellSize);
-	};
+	// const drawBonus = () => {
+	// 	if (bonus.active) {
+	// 		ctx.drawImage(bonusImg, bonus.x, bonus.y, cellSize, cellSize);
+	// 	}
+	// };
+	// const drawApple = () => {
+	// 	ctx.drawImage(appleImg, apple.x, apple.y, cellSize, cellSize);
+	// };
 
 	//draw red tongue that goes in and out of snake mouth when not in vicinity of food'
 	const drawTongue = () => {
@@ -231,9 +238,7 @@ const game = (options, elements) => {
 	const draw = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawTongue();
-		drawApple();
-		drawRotten();
-		drawBonus();
+		drawItems(ctx, cellSize, rotten, apple, bonus);
 		drawSnake();
 	};
 
@@ -242,7 +247,7 @@ const game = (options, elements) => {
 		myData.score += 5;
 		myData.speed -= 5;
 
-		apple = setNewCoordinates(canvas, cellSize);
+		apple = { ...apple, ...setNewCoordinates(canvas, cellSize) };
 
 		snake[0].isEating = true;
 
@@ -337,7 +342,7 @@ const game = (options, elements) => {
 			--myData.lives;
 			myData.score -= 10;
 			myData.speed += 5;
-			rotten = setNewCoordinates(canvas, cellSize);
+			rotten = { ...rotten, ...setNewCoordinates(canvas, cellSize) };
 			rotten.active = false;
 			snake.forEach((body) => (body.isEating = false));
 
