@@ -22,22 +22,12 @@ let levelDiv = document.getElementById("level");
 let livesDiv = document.getElementById("lives");
 let highestScoreDiv = document.getElementById("highestscore");
 let newGame = true;
-let animation = true;
 let updateInterval, appleTimeout;
+let animation = true;
+let highScr = JSON.parse(localStorage.getItem("highestscore")) || 0;
 
 const myGame = game(custom_options, canvas, ctx);
 let { init, getMyData, stopGame, runGame, getBonus } = myGame;
-const reset = () => {
-	let { highestscore, score, level, lives } = getMyData();
-	gameoverDiv.style.opacity = "0";
-	startPauseDiv.textContent = "NEW GAME";
-	newGame = true;
-	highestScoreDiv.textContent = highestscore;
-	startPauseDiv.textContent = "NEW GAME";
-	scoreDiv.textContent = score;
-	livesDiv.textContent = lives;
-	levelDiv.textContent = level;
-};
 
 const appleAnimation = (apple) => {
 	if (animation) {
@@ -82,11 +72,13 @@ const appleAnimation = (apple) => {
 const gameover = () => {
 	clearInterval(updateGame);
 	gameoverDiv.style.opacity = "1";
+	init();
 };
 
 const gameStateHandler = () => {
 	let { gameOn } = getMyData();
 	if (newGame) {
+		defaultGame();
 		canvasDiv.style.backgroundImage = 'url("./assets/snakeBackground.jpeg")';
 		newGame = false;
 	}
@@ -94,22 +86,25 @@ const gameStateHandler = () => {
 };
 
 const updateGame = () => {
-	let { score, lives, highestscore, level, gameOver, eatenApple } = getMyData();
+	let { score, lives, level, gameOver, eatenApple } = getMyData();
 	let { active, countdown } = getBonus();
 	if (!!eatenApple) {
 		appleAnimation(eatenApple);
 	}
 	countdownWrapper.style.display = active ? "block" : "none";
-
+	if (score > highScr) {
+		highScr = score;
+		localStorage.clear();
+		localStorage.setItem("highestscore", JSON.stringify(highScr));
+	}
 	countdownSpan.textContent = countdown;
-	highestScoreDiv.textContent = highestscore;
+
+	highestScoreDiv.textContent = highScr;
 	scoreDiv.textContent = score;
 	livesDiv.textContent = lives;
 	levelDiv.textContent = level;
 	if (gameOver) {
 		gameover();
-		init();
-		reset();
 	}
 };
 
@@ -123,6 +118,18 @@ const pause = () => {
 	startPauseDiv.textContent = "RESUME";
 	stopGame();
 };
+
+const defaultGame = () => {
+	init();
+	let { score, level, lives } = getMyData();
+	gameoverDiv.style.opacity = "0";
+	startPauseDiv.textContent = "NEW GAME";
+	newGame = true;
+	highestScoreDiv.textContent = highScr;
+	scoreDiv.textContent = score;
+	livesDiv.textContent = lives;
+	levelDiv.textContent = level;
+};
 document.addEventListener("keydown", myGame.handleKeyPressed);
 startPauseDiv.addEventListener("click", gameStateHandler);
-window.addEventListener("load", init);
+window.addEventListener("load", defaultGame);

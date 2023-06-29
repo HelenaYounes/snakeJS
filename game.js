@@ -5,7 +5,6 @@ const game_defaults = {
 	score: 0,
 	lives: 0,
 	level: 1,
-	highestscore: JSON.parse(localStorage.getItem("highestscore")) || 0,
 	tongueOut: true,
 	mouthOpen: false,
 	gameOn: false,
@@ -85,7 +84,6 @@ const game = (options, canvas, ctx) => {
 		rotten,
 		redBodyTimeout,
 		tongueInterval,
-		appleTimeout,
 		bonusTimeout,
 		bonusInterval,
 		tongue,
@@ -295,18 +293,11 @@ const game = (options, canvas, ctx) => {
 		drawBonus();
 		drawSnake();
 	};
-	const updateHighScore = () => {
-		localStorage.clear();
-		localStorage.setItem("highestscore", JSON.stringify(highestscore));
-	};
+
 	const gotApple = () => {
 		myData.eatenApple = apple;
 		myData.score += 5;
 		myData.speed -= 5;
-		if (myData.score > myData.highestscore) {
-			myData.highestscore = myData.score;
-			updateHighScore();
-		}
 
 		apple = setNewCoordinates();
 
