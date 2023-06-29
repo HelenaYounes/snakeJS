@@ -1,7 +1,8 @@
-const scoreSpan = document.getElementById("score");
-const countdownWrapper = document.getElementById("countdown_wrapper");
+let scoreSpan = document.getElementById("score");
+
+let countdownWrapper = document.getElementById("countdown_wrapper");
 countdownWrapper.style.display = "none";
-const countdownSpan = document.getElementById("countdown");
+let countdownSpan = document.getElementById("countdown");
 
 const game_defaults = {
 	direction: "left",
@@ -152,15 +153,6 @@ const game = (options, canvas, ctx) => {
 		bonus = setNewCoordinates();
 		bonus.countdown = 5;
 		bonus.active = false;
-
-		tongueInterval = setInterval(
-			() => (myData.tongueOut = !myData.tongueOut),
-			1000
-		);
-		bonusInterval = setInterval(
-			activateBonus,
-			Math.floor(Math.random() * (13 - 6) + 6) * 1000
-		);
 	};
 	const respawn = () => {
 		const centerX = Math.floor(canvas.width / 2);
@@ -187,7 +179,7 @@ const game = (options, canvas, ctx) => {
 		if (bonus.countdown === 0) {
 			stopBonusCountdown();
 		} else {
-			bonus.bonusCountdown--;
+			bonus.countdown -= 1;
 			bonusTimeout = setTimeout(updateCountDown, 1000);
 		}
 	};
@@ -473,8 +465,14 @@ const game = (options, canvas, ctx) => {
 	const getMyData = () => myData;
 
 	const runGame = () => {
-		tongueInterval = setInterval(tongueInterval);
-		bonusInterval = setInterval(bonusInterval);
+		tongueInterval = setInterval(
+			() => (myData.tongueOut = !myData.tongueOut),
+			1000
+		);
+		bonusInterval = setInterval(
+			activateBonus,
+			Math.floor(Math.random() * (13 - 6) + 6) * 1000
+		);
 		gameInterval = setInterval(loop, myData.speed);
 	};
 

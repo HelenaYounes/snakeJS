@@ -9,6 +9,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 let startPauseDiv = document.getElementById("startPause");
+let scoreSpan = document.getElementById("score");
 
 let gameoverDiv = document.getElementById("game-over");
 let canvasDiv = document.getElementById("gameCanvas");
@@ -20,6 +21,7 @@ let highestScoreDiv = document.getElementById("highestscore");
 let newGame = true;
 
 let isGameRunning = false;
+let updateInterval;
 const myGame = game(custom_options, canvas, ctx);
 let { init, getMyData, stopGame, runGame, loop } = myGame;
 const reset = () => {
@@ -33,10 +35,8 @@ const reset = () => {
 	scoreDiv.textContent = 0;
 	livesDiv.textContent = 0;
 	levelDiv.textContent = 1;
-	init();
 };
 const gameOver = () => {
-	clearInterval(gameInterval);
 	gameoverDiv.style.opacity = "1";
 	// canvasDiv.style.backgroundImage = "url(./assets/gameover.png)";
 	// gameTimeout = setTimeout(reset, 1000);
@@ -48,8 +48,7 @@ const gameStateHandler = () => {
 		newGame = false;
 		// gameTimeout = setInterval(start, 1000);
 	}
-	isGameRunning ? stopGame() : runGame();
-	isGameRunning = !isGameRunning;
+	isGameRunning ? pause() : start();
 };
 const updateHighScore = () => {
 	highestScoreDiv.textContent = `${highestscore}`;
@@ -58,34 +57,29 @@ const updateHighScore = () => {
 };
 
 const updateGame = () => {
-	let score = getScore();
-	let lives = getLives();
-	let level = getLevel();
-	let speed = getSpeed();
+	let { score, lives, highestscore, level } = getMyData();
 	if (score > highestscore) {
 		highestscore = score;
 		updateHighScore();
 	}
-	if (gameSpeed > speed) {
-		gameSpeed = speed;
-		clearInterval(gameInterval);
-		gameInterval = setInterval(loop, gameSpeed);
-	}
-	scoreDiv.textContent = `${score}`;
-	livesDiv.textContent = `${lives}`;
-	levelDiv.textContent = `${level}`;
+
+	scoreDiv.textContent = score;
+	livesDiv.textContent = lives;
+	levelDiv.textContent = level;
 };
 
-// const start = () => {
-// 	startPauseDiv.textContent = "PAUSE";
-// 	isGameRunning = true;
-// 	runGame();
-// };
-// const pause = () => {
-// 	startPauseDiv.textContent = "RESUME";
-// 	isGameRunning = false;
-// 	stopGame();
-// };
+const start = () => {
+	startPauseDiv.textContent = "PAUSE";
+	isGameRunning = true;
+	runGame();
+	updateInterval = setInterval(updateGame, 150);
+};
+const pause = () => {
+	clearInterval(updateInterval);
+	startPauseDiv.textContent = "RESUME";
+	isGameRunning = false;
+	stopGame();
+};
 document.addEventListener("keydown", myGame.handleKeyPressed);
 startPauseDiv.addEventListener("click", gameStateHandler);
 window.addEventListener("load", init);
