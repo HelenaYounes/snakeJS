@@ -8,6 +8,7 @@ import {
 	rottenImg,
 	keyEvent,
 	openHead,
+	cellSize,
 } from "./constants.js";
 
 const game_defaults = {
@@ -26,8 +27,6 @@ const game_defaults = {
 	eatenApple: null,
 };
 
-const cellSize = 30;
-
 const game = (options, elements) => {
 	const {
 		canvas,
@@ -45,9 +44,6 @@ const game = (options, elements) => {
 
 	const ctx = canvas.getContext("2d");
 	let highScr = JSON.parse(localStorage.getItem("highestscore")) || 0;
-
-	canvas.width = options.width || game_defaults.width;
-	canvas.height = options.height || game_defaults.height;
 
 	let animation,
 		apple,
@@ -72,22 +68,11 @@ const game = (options, elements) => {
 			Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
 		return { x: randX, y: randY };
 	};
-	const default_snake = [
-		{
-			x: Math.floor(canvas.width / (2 * cellSize)) * cellSize,
-			y: Math.floor(canvas.height / (2 * cellSize)) * cellSize,
-			isEating: false,
-			direction: "left",
-		},
-	];
 
 	// TODO: remove when migration complete
 	animation = true;
 	newGame = true;
 
-	const default_bonus = { ...setNewCoordinates(), countdown: 5, active: false };
-	const default_apple = { ...setNewCoordinates(), active: true };
-	const default_rotten = { ...setNewCoordinates(), active: false };
 	//give randown x and y coordinates, withing canvas area
 
 	//check if there is collision between 2 given cells
@@ -122,13 +107,23 @@ const game = (options, elements) => {
 	const init = () => {
 		myData = { ...game_defaults, ...options };
 
+		canvas.width = options.width || game_defaults.width;
+		canvas.height = options.height || game_defaults.height;
+
+		snake = [
+			{
+				x: Math.floor(canvas.width / (2 * cellSize)) * cellSize,
+				y: Math.floor(canvas.height / (2 * cellSize)) * cellSize,
+				isEating: false,
+				direction: "left",
+			},
+		];
+		bonus = { ...setNewCoordinates(), countdown: 5, active: false };
+		apple = { ...setNewCoordinates(), active: true };
+		rotten = { ...setNewCoordinates(), active: false };
+
 		clearInterval(tongueInterval);
 		clearInterval(bonusInterval);
-
-		rotten = { ...default_rotten };
-		apple = { ...default_apple };
-		snake = [...default_snake];
-		bonus = { ...default_bonus };
 	};
 	const respawn = () => {
 		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;

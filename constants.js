@@ -58,6 +58,8 @@ const keyEvent = {
 	ArrowRight: "right",
 };
 
+const cellSize = 30;
+
 export {
 	snakeBody,
 	snakeHead,
@@ -68,4 +70,5 @@ export {
 	rottenImg,
 	keyEvent,
 	openHead,
+	cellSize,
 };
