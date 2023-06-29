@@ -2,9 +2,9 @@
 const collision = (node) => (item) => node.x === item.x && node.y === item.y;
 
 //check if node is within canvas area
-const checkBounds = (node, canvas) => {
-	let outXaxis = node.x < 0 || node.x > canvas.width;
-	let outYaxis = node.y < 0 || node.y > canvas.height;
+const checkBounds = (node, dimensions) => {
+	let outXaxis = node.x < 0 || node.x > dimensions.width;
+	let outYaxis = node.y < 0 || node.y > dimensions.height;
 	return outXaxis || outYaxis;
 };
 
@@ -23,8 +23,25 @@ const checkCollision = (arr, node) => {
 };
 
 //check both if given cell is within canvas area or if it collides with a specific cell/
-const badPosition = (arr, node, canvas) => {
-	return checkBounds(node, canvas) || checkCollision(arr.slice(1), node);
+const badPosition = (arr, node, dimensions) => {
+	return checkBounds(node, dimensions) || checkCollision(arr.slice(1), node);
 };
 
-export { collision, checkBounds, inVicinity, checkCollision, badPosition };
+//get random x and y coordinates
+const setNewCoordinates = (dimensions, cellSize) => {
+	let randX =
+		Math.floor(Math.random() * (dimensions.width / cellSize - 2) + 1) *
+		cellSize;
+	let randY =
+		Math.floor(Math.random() * (dimensions.height / cellSize - 2) + 1) *
+		cellSize;
+	return { x: randX, y: randY };
+};
+export {
+	collision,
+	checkBounds,
+	inVicinity,
+	checkCollision,
+	badPosition,
+	setNewCoordinates,
+};

@@ -11,7 +11,12 @@ import {
 	cellSize,
 } from "./constants.js";
 
-import { collision, inVicinity, badPosition } from "./utils.js";
+import {
+	collision,
+	inVicinity,
+	badPosition,
+	setNewCoordinates,
+} from "./utils.js";
 
 const game_defaults = {
 	direction: "left",
@@ -63,14 +68,6 @@ const game = (options, elements) => {
 		updateInterval,
 		appleTimeout;
 
-	const setNewCoordinates = () => {
-		let randX =
-			Math.floor(Math.random() * (canvas.width / cellSize - 2) + 1) * cellSize;
-		let randY =
-			Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
-		return { x: randX, y: randY };
-	};
-
 	const init = () => {
 		myData = { ...game_defaults, ...options };
 
@@ -85,9 +82,13 @@ const game = (options, elements) => {
 				direction: "left",
 			},
 		];
-		bonus = { ...setNewCoordinates(), countdown: 5, active: false };
-		apple = { ...setNewCoordinates(), active: true };
-		rotten = { ...setNewCoordinates(), active: false };
+		bonus = {
+			...setNewCoordinates(canvas, cellSize),
+			countdown: 5,
+			active: false,
+		};
+		apple = { ...setNewCoordinates(canvas, cellSize), active: true };
+		rotten = { ...setNewCoordinates(canvas, cellSize), active: false };
 		animation = true;
 		newGame = true;
 		clearInterval(tongueInterval);
@@ -108,7 +109,7 @@ const game = (options, elements) => {
 	};
 	const stopBonusCountdown = () => {
 		bonus.active = false;
-		bonus = setNewCoordinates();
+		bonus = setNewCoordinates(canvas, cellSize);
 		// countdownWrapper.style.display = "none";
 	};
 	const updateCountDown = () => {
@@ -241,7 +242,7 @@ const game = (options, elements) => {
 		myData.score += 5;
 		myData.speed -= 5;
 
-		apple = setNewCoordinates();
+		apple = setNewCoordinates(canvas, cellSize);
 
 		snake[0].isEating = true;
 
@@ -336,7 +337,7 @@ const game = (options, elements) => {
 			--myData.lives;
 			myData.score -= 10;
 			myData.speed += 5;
-			rotten = setNewCoordinates();
+			rotten = setNewCoordinates(canvas, cellSize);
 			rotten.active = false;
 			snake.forEach((body) => (body.isEating = false));
 
