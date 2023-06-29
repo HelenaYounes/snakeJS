@@ -1,9 +1,5 @@
 let scoreSpan = document.getElementById("score");
 
-let countdownWrapper = document.getElementById("countdown_wrapper");
-countdownWrapper.style.display = "none";
-let countdownSpan = document.getElementById("countdown");
-
 const game_defaults = {
 	direction: "left",
 	height: 500,
@@ -16,7 +12,8 @@ const game_defaults = {
 	mouthOpen: false,
 	gameOn: false,
 	died: false,
-	respawned: false,
+	gameOver: false,
+	bonusActive: false,
 };
 //create image, and argument as the image source
 const createImage = (src) => {
@@ -87,6 +84,7 @@ const game = (options, canvas, ctx) => {
 		bonus,
 		snake,
 		rotten,
+		redBodyTimeout,
 		tongueInterval,
 		appleTimeout,
 		bonusTimeout,
@@ -168,19 +166,15 @@ const game = (options, canvas, ctx) => {
 			body.y = body.y - dy;
 		});
 		myData.direction = snake[0].direction;
-		myData.died = false;
-		rotten = { ...default_rotten };
-		apple = { ...default_apple };
-		bonus = { ...default_bonus };
 	};
 	const stopBonusCountdown = () => {
 		bonus.active = false;
 		bonus = setNewCoordinates();
-		countdownWrapper.style.display = "none";
+		// countdownWrapper.style.display = "none";
 	};
 	const updateCountDown = () => {
 		clearTimeout(bonusTimeout);
-		countdownSpan.textContent = bonus.countdown;
+		// countdownSpan.textContent = bonus.countdown;
 		if (bonus.countdown === 0) {
 			stopBonusCountdown();
 		} else {
@@ -302,12 +296,18 @@ const game = (options, canvas, ctx) => {
 		drawBonus();
 		drawSnake();
 	};
-
+	const updateHighScore = () => {
+		localStorage.clear();
+		localStorage.setItem("highestscore", JSON.stringify(highestscore));
+	};
 	const gotApple = () => {
 		clearTimeout(appleTimeout);
 		myData.score += 5;
 		myData.speed -= 5;
-
+		if (myData.score > myData.highestscore) {
+			myData.highestscore = myData.score;
+			updateHighScore();
+		}
 		//add apple animation
 
 		// Animate the apple jump
@@ -356,7 +356,7 @@ const game = (options, canvas, ctx) => {
 		if (!bonus.active) {
 			bonus.active = true;
 			bonus.countdown = 5;
-			countdownWrapper.style.display = "block";
+
 			updateCountDown();
 		}
 	};
@@ -399,12 +399,16 @@ const game = (options, canvas, ctx) => {
 			rotten = setNewCoordinates();
 			rotten.active = false;
 			snake.forEach((body) => (body.isEating = false));
-			clearInterval(gameInterval);
 
 			if (myData.lives >= 0) {
-				myData.gameOn = false;
-				myData.respawned = true;
+				clearTimeout(redBodyTimeout);
+				redBodyTimeout = setTimeout(() => {
+					myData.died = false;
+				}, 1000);
 				respawn();
+			} else {
+				myData.gameOver = true;
+				stopGame();
 			}
 		}
 	};
@@ -469,10 +473,10 @@ const game = (options, canvas, ctx) => {
 	const hasCollided = () => myData.lives < 0;
 
 	const getMyData = () => myData;
+	const getBonus = () => bonus;
 
 	const runGame = () => {
 		myData.gameOn = true;
-		myData.respawned = false;
 		tongueInterval = setInterval(
 			() => (myData.tongueOut = !myData.tongueOut),
 			1000
@@ -483,7 +487,6 @@ const game = (options, canvas, ctx) => {
 		);
 		gameInterval = setInterval(loop, myData.speed);
 	};
-
 	const stopGame = () => {
 		clearInterval(gameInterval);
 		clearInterval(tongueInterval);
@@ -497,6 +500,7 @@ const game = (options, canvas, ctx) => {
 		loop,
 		stopGame,
 		runGame,
+		getBonus,
 	};
 };
 export default game;

@@ -9,6 +9,11 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 let startPauseDiv = document.getElementById("startPause");
+let scoreSpan = document.getElementById("score");
+
+let countdownWrapper = document.getElementById("countdown_wrapper");
+countdownWrapper.style.display = "none";
+let countdownSpan = document.getElementById("countdown");
 
 let gameoverDiv = document.getElementById("game-over");
 let canvasDiv = document.getElementById("gameCanvas");
@@ -16,29 +21,25 @@ let scoreDiv = document.getElementById("score");
 let levelDiv = document.getElementById("level");
 let livesDiv = document.getElementById("lives");
 let highestScoreDiv = document.getElementById("highestscore");
-
 let newGame = true;
-
-let isGameRunning = false;
 let updateInterval;
+
 const myGame = game(custom_options, canvas, ctx);
-let { init, getMyData, stopGame, runGame, loop } = myGame;
+let { init, getMyData, stopGame, runGame, getBonus } = myGame;
 const reset = () => {
-	// clearTimeout(gameTimeout);
+	let { highestscore, score, level, lives } = getMyData();
 	gameoverDiv.style.opacity = "0";
-	isGameRunning = false;
 	startPauseDiv.textContent = "NEW GAME";
 	newGame = true;
-	highestScoreDiv.textContent = getHighScore();
-
-	scoreDiv.textContent = 0;
-	livesDiv.textContent = 0;
-	levelDiv.textContent = 1;
+	highestScoreDiv.textContent = highestscore;
+	startPauseDiv.textContent = "NEW GAME";
+	scoreDiv.textContent = score;
+	livesDiv.textContent = lives;
+	levelDiv.textContent = level;
 };
-const gameOver = () => {
+const gameover = () => {
+	clearInterval(updateGame);
 	gameoverDiv.style.opacity = "1";
-	// canvasDiv.style.backgroundImage = "url(./assets/gameover.png)";
-	// gameTimeout = setTimeout(reset, 1000);
 };
 
 const gameStateHandler = () => {
@@ -46,35 +47,32 @@ const gameStateHandler = () => {
 	if (newGame) {
 		canvasDiv.style.backgroundImage = 'url("./assets/snakeBackground.jpeg")';
 		newGame = false;
-		// gameTimeout = setInterval(start, 1000);
 	}
 	gameOn ? pause() : start();
 };
-const updateHighScore = () => {
-	highestScoreDiv.textContent = highestscore;
-	localStorage.clear();
-	localStorage.setItem("highestscore", JSON.stringify(highestscore));
-};
 
 const updateGame = () => {
-	let { score, lives, highestscore, level, respawned } = getMyData();
-	if (score > highestscore) {
-		highestscore = score;
-		updateHighScore();
-	}
+	let { score, lives, highestscore, level, gameOver } = getMyData();
+	let { active, countdown } = getBonus();
 
+	countdownWrapper.style.display = active ? "block" : "none";
+
+	countdownSpan.textContent = countdown;
+	highestScoreDiv.textContent = highestscore;
 	scoreDiv.textContent = score;
 	livesDiv.textContent = lives;
 	levelDiv.textContent = level;
-	if (respawned) {
-		pause();
+	if (gameOver) {
+		gameover();
+		init();
+		reset();
 	}
 };
 
 const start = () => {
 	startPauseDiv.textContent = "PAUSE";
 	runGame();
-	updateInterval = setInterval(updateGame, 150);
+	updateInterval = setInterval(updateGame, 50);
 };
 const pause = () => {
 	clearInterval(updateInterval);
