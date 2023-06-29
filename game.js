@@ -75,10 +75,29 @@ const keyEvent = {
 
 const cellSize = 30;
 
-const game = (options, canvas, ctx) => {
+const game = (options, elements) => {
+	const {
+		canvas,
+		startPauseDiv,
+		scoreSpan,
+		countdownWrapper,
+		countdownSpan,
+		gameoverDiv,
+		canvasDiv,
+		scoreDiv,
+		levelDiv,
+		livesDiv,
+		highestScoreDiv,
+	} = elements;
+
+	const ctx = canvas.getContext("2d");
+	let highScr = JSON.parse(localStorage.getItem("highestscore")) || 0;
+
 	canvas.width = options.width || game_defaults.width;
 	canvas.height = options.height || game_defaults.height;
-	let apple,
+
+	let animation,
+		apple,
 		bonus,
 		snake,
 		rotten,
@@ -87,8 +106,11 @@ const game = (options, canvas, ctx) => {
 		bonusTimeout,
 		bonusInterval,
 		tongue,
+		newGame,
 		gameInterval,
-		myData;
+		myData,
+		updateInterval,
+		appleTimeout;
 
 	const setNewCoordinates = () => {
 		let randX =
@@ -105,6 +127,10 @@ const game = (options, canvas, ctx) => {
 			direction: "left",
 		},
 	];
+
+	// TODO: remove when migration complete
+	animation = true;
+	newGame = true;
 
 	const default_bonus = { ...setNewCoordinates(), countdown: 5, active: false };
 	const default_apple = { ...setNewCoordinates(), active: true };
@@ -308,6 +334,47 @@ const game = (options, canvas, ctx) => {
 		}
 	};
 
+	const appleAnimation = (apple) => {
+		if (animation) {
+			animation = false;
+			clearTimeout(appleTimeout);
+			//add apple animation
+
+			// Animate the apple jump
+			const appleElement = document.createElement("div");
+			appleElement.classList.add("jump-animation");
+			appleElement.innerText = "+5";
+			document.body.appendChild(appleElement);
+
+			// Calculate the position of the score span
+			const scoreRect = scoreSpan.getBoundingClientRect();
+			const scoreX = scoreRect.left + scoreRect.width / 2;
+			const scoreY = scoreRect.top + scoreRect.height / 2;
+
+			// Calculate the position of the canvas
+			const canvasRect = canvas.getBoundingClientRect();
+			const canvasX = canvasRect.left + apple.x;
+			const canvasY = canvasRect.top + apple.y;
+
+			// Animate the apple jump from the canvas to the score span
+			appleElement.style.left = canvasX + "px";
+			appleElement.style.top = canvasY + "px";
+			appleElement.style.transition = "all 1s";
+
+			requestAnimationFrame(() => {
+				appleElement.style.left = scoreX + "px";
+				appleElement.style.top = scoreY + "px";
+				appleElement.style.opacity = "0";
+			});
+
+			// Remove the apple element after the animation finishes
+			appleTimeout = setTimeout(() => {
+				appleElement.remove();
+				animation = true;
+			}, 2000);
+		}
+	};
+
 	//Bonus apples are activated at every 6 to 12 sec;
 	const activateBonus = () => {
 		if (!bonus.active) {
@@ -372,6 +439,7 @@ const game = (options, canvas, ctx) => {
 
 	const handleKeyPressed = (e) => {
 		let newDirection = keyEvent[e.key];
+
 		let opposite =
 			newDirection === myData.direction ||
 			`${newDirection}:${myData.direction}` === "up:down" ||
@@ -449,6 +517,72 @@ const game = (options, canvas, ctx) => {
 		clearInterval(bonusInterval);
 		myData.gameOn = false;
 	};
+
+	const updateGame = () => {
+		let { score, lives, level, gameOver, eatenApple } = getMyData();
+		let { active, countdown } = getBonus();
+		if (!!eatenApple) {
+			appleAnimation(eatenApple);
+		}
+		countdownWrapper.style.display = active ? "block" : "none";
+		if (score > highScr) {
+			highScr = score;
+			localStorage.clear();
+			localStorage.setItem("highestscore", JSON.stringify(highScr));
+		}
+		countdownSpan.textContent = countdown;
+
+		highestScoreDiv.textContent = highScr;
+		scoreDiv.textContent = score;
+		livesDiv.textContent = lives;
+		levelDiv.textContent = level;
+		if (gameOver) {
+			gameover();
+		}
+	};
+
+	const gameover = () => {
+		clearInterval(updateGame);
+		gameoverDiv.style.opacity = "1";
+		init();
+	};
+
+	const gameStateHandler = () => {
+		let { gameOn } = getMyData();
+		if (newGame) {
+			defaultGame();
+			canvasDiv.style.backgroundImage = 'url("./assets/snakeBackground.jpeg")';
+			newGame = false;
+		}
+		gameOn ? pause() : start();
+	};
+
+	const start = () => {
+		startPauseDiv.textContent = "PAUSE";
+		runGame();
+		updateInterval = setInterval(updateGame, 50);
+	};
+	const pause = () => {
+		clearInterval(updateInterval);
+		startPauseDiv.textContent = "RESUME";
+		stopGame();
+	};
+
+	const defaultGame = () => {
+		init();
+		let { score, level, lives } = getMyData();
+		gameoverDiv.style.opacity = "0";
+		startPauseDiv.textContent = "NEW GAME";
+		newGame = true;
+		highestScoreDiv.textContent = highScr;
+		scoreDiv.textContent = score;
+		livesDiv.textContent = lives;
+		levelDiv.textContent = level;
+	};
+
+	startPauseDiv.addEventListener("click", gameStateHandler);
+	document.addEventListener("keydown", handleKeyPressed);
+
 	return {
 		init,
 		handleKeyPressed,
@@ -457,6 +591,7 @@ const game = (options, canvas, ctx) => {
 		stopGame,
 		runGame,
 		getBonus,
+		defaultGame,
 	};
 };
 export default game;
