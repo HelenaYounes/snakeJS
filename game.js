@@ -11,6 +11,8 @@ import {
 	cellSize,
 } from "./constants.js";
 
+import { collision, inVicinity, badPosition } from "./utils.js";
+
 const game_defaults = {
 	direction: "left",
 	height: 500,
@@ -69,41 +71,6 @@ const game = (options, elements) => {
 		return { x: randX, y: randY };
 	};
 
-	// TODO: remove when migration complete
-	animation = true;
-	newGame = true;
-
-	//give randown x and y coordinates, withing canvas area
-
-	//check if there is collision between 2 given cells
-	const collision = (node) => (item) => node.x === item.x && node.y === item.y;
-
-	//check if node is within canvas area
-	const checkBounds = (node) => {
-		let outXaxis = node.x < 0 || node.x > canvas.width;
-		let outYaxis = node.y < 0 || node.y > canvas.height;
-		return outXaxis || outYaxis;
-	};
-
-	//check if a cell/square is within a given distance of another cell/square
-	const inVicinity = (node, item) => {
-		let withinXaxis =
-			node.x <= item.x + 2 * cellSize && node.x >= item.x - 2 * cellSize;
-		let withinYaxis =
-			node.y <= item.y + 2 * cellSize && node.y >= item.y - 2 * cellSize;
-		return withinXaxis && withinYaxis;
-	};
-
-	//check if any segment of given array is colliding with specific square/cell
-	const checkCollision = (arr, node) => {
-		return arr.some(collision(node));
-	};
-
-	//check both if given cell is within canvas area or if it collides with a specific cell/
-	const badPosition = (arr, node) => {
-		return checkBounds(node) || checkCollision(arr.slice(1), node);
-	};
-
 	const init = () => {
 		myData = { ...game_defaults, ...options };
 
@@ -121,7 +88,8 @@ const game = (options, elements) => {
 		bonus = { ...setNewCoordinates(), countdown: 5, active: false };
 		apple = { ...setNewCoordinates(), active: true };
 		rotten = { ...setNewCoordinates(), active: false };
-
+		animation = true;
+		newGame = true;
 		clearInterval(tongueInterval);
 		clearInterval(bonusInterval);
 	};
@@ -361,7 +329,7 @@ const game = (options, elements) => {
 
 	const checkBadCollisions = () => {
 		if (
-			badPosition(snake, snake[0]) ||
+			badPosition(snake, snake[0], canvas) ||
 			(collision(snake[0])(rotten) && rotten.active)
 		) {
 			myData.died = true;
@@ -433,8 +401,8 @@ const game = (options, elements) => {
 
 		snake.unshift(head);
 		myData.mouthOpen =
-			inVicinity(snake[0], apple) ||
-			(bonus.active && inVicinity(snake[0], bonus));
+			inVicinity(snake[0], apple, cellSize) ||
+			(bonus.active && inVicinity(snake[0], bonus, cellSize));
 	};
 
 	const loop = () => {
