@@ -5,8 +5,7 @@
   "main": "main.js",
   "type": "module",
   "scripts": {
-    "start": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon snake.js"
+    "start": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",

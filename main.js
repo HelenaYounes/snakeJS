@@ -21,28 +21,12 @@ let newGame = true;
 
 let isGameRunning = false;
 const myGame = game(custom_options, canvas, ctx);
-let {
-	init,
-	draw,
-	moveSnake,
-	getLives,
-	getScore,
-	getLevel,
-	getSpeed,
-	hasCollided,
-	getHighScore,
-	stopGame,
-	runGame,
-	checkBadCollisions,
-	checkFoodCollision,
-} = myGame;
-let gameSpeed = custom_options.speed;
+let { init, getMyData, stopGame, runGame, loop } = myGame;
 const reset = () => {
 	// clearTimeout(gameTimeout);
 	gameoverDiv.style.opacity = "0";
 	isGameRunning = false;
 	startPauseDiv.textContent = "NEW GAME";
-	gameSpeed = custom_options.speed;
 	newGame = true;
 	highestScoreDiv.textContent = getHighScore();
 
@@ -64,7 +48,8 @@ const gameStateHandler = () => {
 		newGame = false;
 		// gameTimeout = setInterval(start, 1000);
 	}
-	isGameRunning ? pause() : start();
+	isGameRunning ? stopGame() : runGame();
+	isGameRunning = !isGameRunning;
 };
 const updateHighScore = () => {
 	highestScoreDiv.textContent = `${highestscore}`;
@@ -91,16 +76,16 @@ const updateGame = () => {
 	levelDiv.textContent = `${level}`;
 };
 
-const start = () => {
-	startPauseDiv.textContent = "PAUSE";
-	isGameRunning = true;
-	runGame();
-};
-const pause = () => {
-	startPauseDiv.textContent = "RESUME";
-	isGameRunning = false;
-	stopGame();
-};
+// const start = () => {
+// 	startPauseDiv.textContent = "PAUSE";
+// 	isGameRunning = true;
+// 	runGame();
+// };
+// const pause = () => {
+// 	startPauseDiv.textContent = "RESUME";
+// 	isGameRunning = false;
+// 	stopGame();
+// };
 document.addEventListener("keydown", myGame.handleKeyPressed);
 startPauseDiv.addEventListener("click", gameStateHandler);
 window.addEventListener("load", init);

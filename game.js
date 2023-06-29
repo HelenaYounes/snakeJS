@@ -86,14 +86,11 @@ const game = (options, canvas, ctx) => {
 		tongueInterval,
 		appleTimeout,
 		bonusTimeout,
-		collisionTimeout,
 		bonusInterval,
 		tongue,
-		highestscore,
-		loopInterval,
+		gameInterval,
 		myData;
 
-	const getUpdates = () => updates;
 	//check if there is collision between 2 given cells
 	const collision = (node) => (item) => node.x === item.x && node.y === item.y;
 
@@ -103,7 +100,6 @@ const game = (options, canvas, ctx) => {
 		let outYaxis = node.y < 0 || node.y > canvas.height;
 		return outXaxis || outYaxis;
 	};
-	const getHighScore = () => highestscore;
 
 	//check if a cell/square is within a given distance of another cell/square
 	const inVicinity = (node, item) => {
@@ -134,13 +130,11 @@ const game = (options, canvas, ctx) => {
 		return { x: randX, y: randY };
 	};
 
-	const toggle = (param) => {
-		param = !param;
-	};
 	const init = () => {
 		myData = { ...game_defaults, ...options };
 
 		clearInterval(tongueInterval);
+		clearInterval(bonusInterval);
 		canvas.width = myData.width;
 		canvas.height = myData.height;
 
@@ -156,18 +150,19 @@ const game = (options, canvas, ctx) => {
 			},
 		];
 		bonus = setNewCoordinates();
-		bonus.bonusCountdown = 5;
+		bonus.countdown = 5;
 		bonus.active = false;
 
-		tongueInterval = setInterval(() => toggle(myData.tongueOut), 1000);
+		tongueInterval = setInterval(
+			() => (myData.tongueOut = !myData.tongueOut),
+			1000
+		);
 		bonusInterval = setInterval(
 			activateBonus,
 			Math.floor(Math.random() * (13 - 6) + 6) * 1000
 		);
 	};
 	const respawn = () => {
-		clearTimeout(collisionTimeout);
-
 		const centerX = Math.floor(canvas.width / 2);
 		const centerY = Math.floor(canvas.height / 2);
 
@@ -180,13 +175,6 @@ const game = (options, canvas, ctx) => {
 		});
 		myData.direction = snake[0].direction;
 		myData.died = false;
-		tongueInterval = setInterval(() => {
-			toggle(myData.tongueOut);
-		}, 1000);
-		bonusInterval = setInterval(
-			activateBonus,
-			Math.floor(Math.random() * (13 - 6) + 6) * 1000
-		);
 	};
 	const stopBonusCountdown = () => {
 		bonus.active = false;
@@ -195,8 +183,8 @@ const game = (options, canvas, ctx) => {
 	};
 	const updateCountDown = () => {
 		clearTimeout(bonusTimeout);
-		countdownSpan.textContent = bonus.bonusCountdown;
-		if (bonus.bonusCountdown === 0) {
+		countdownSpan.textContent = bonus.countdown;
+		if (bonus.countdown === 0) {
 			stopBonusCountdown();
 		} else {
 			bonus.bonusCountdown--;
@@ -367,17 +355,17 @@ const game = (options, canvas, ctx) => {
 	};
 
 	//Bonus apples are activated at every 6 to 12 sec;
-	const activateBonus = (bonus) => {
+	const activateBonus = () => {
 		if (!bonus.active) {
 			bonus.active = true;
-			bonus.bonusCountdown = 5;
+			bonus.countdown = 5;
 			countdownWrapper.style.display = "block";
 			updateCountDown();
 		}
 	};
 
 	const gotBonus = () => {
-		if (bonus.active && bonus.bonusCountdown > 0) {
+		if (bonus.active && bonus.countdown > 0) {
 			clearTimeout(bonusTimeout);
 			stopBonusCountdown();
 			snake[0].isEating = true;
@@ -403,9 +391,6 @@ const game = (options, canvas, ctx) => {
 	};
 
 	const checkBadCollisions = () => {
-		// checkCollision(snake.slice(1), snake[0]);
-		// checkBounds(snake[0]);
-		// collision(snake[0])(rotten);
 		if (
 			badPosition(snake, snake[0]) ||
 			(collision(snake[0])(rotten) && rotten.active)
@@ -417,15 +402,11 @@ const game = (options, canvas, ctx) => {
 			rotten = setNewCoordinates();
 			rotten.active = false;
 			snake.forEach((body) => (body.isEating = false));
-			clearInterval(tongueInterval);
-			clearInterval(bonusInterval);
+			clearInterval(gameInterval);
 
-			if (lives >= 0) {
-				//pause snake movement and reposition snake after 1 sec
-				myData.direction = "stop";
-				collisionTimeout = setTimeout(() => {
-					respawn();
-				}, 1000);
+			if (myData.lives >= 0) {
+				respawn();
+				runGame();
 			}
 		}
 	};
@@ -486,36 +467,27 @@ const game = (options, canvas, ctx) => {
 		checkBadCollisions();
 		checkFoodCollision();
 	};
-	const getScore = () => myData.score;
-	const getLives = () => myData.lives;
-	const getLevel = () => myData.level;
-	const getSpeed = () => myData.speed;
+
 	const hasCollided = () => myData.lives < 0;
 
+	const getMyData = () => myData;
+
 	const runGame = () => {
-		myData.gameOn = true;
-		loopInterval = setInterval(loop, myData.speed);
+		tongueInterval = setInterval(tongueInterval);
+		bonusInterval = setInterval(bonusInterval);
+		gameInterval = setInterval(loop, myData.speed);
 	};
 
 	const stopGame = () => {
-		myData.gameOn = false;
-		clearInterval(loopInterval);
+		clearInterval(gameInterval);
+		clearInterval(tongueInterval);
+		clearInterval(bonusInterval);
 	};
 	return {
 		init,
-		loop,
 		handleKeyPressed,
-		draw,
-		moveSnake,
-		checkBadCollisions,
-		checkFoodCollision,
-		hasCollided,
-		getScore,
-		getLives,
-		getLevel,
-		getSpeed,
-		getHighScore,
-		getUpdates,
+		getMyData,
+		loop,
 		stopGame,
 		runGame,
 	};
