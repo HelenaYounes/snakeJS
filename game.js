@@ -1,5 +1,3 @@
-let scoreSpan = document.getElementById("score");
-
 const game_defaults = {
 	direction: "left",
 	height: 500,
@@ -14,6 +12,7 @@ const game_defaults = {
 	died: false,
 	gameOver: false,
 	bonusActive: false,
+	eatenApple: null,
 };
 //create image, and argument as the image source
 const createImage = (src) => {
@@ -301,46 +300,13 @@ const game = (options, canvas, ctx) => {
 		localStorage.setItem("highestscore", JSON.stringify(highestscore));
 	};
 	const gotApple = () => {
-		clearTimeout(appleTimeout);
+		myData.eatenApple = apple;
 		myData.score += 5;
 		myData.speed -= 5;
 		if (myData.score > myData.highestscore) {
 			myData.highestscore = myData.score;
 			updateHighScore();
 		}
-		//add apple animation
-
-		// Animate the apple jump
-		const appleElement = document.createElement("div");
-		appleElement.classList.add("jump-animation");
-		appleElement.innerText = "+5";
-		document.body.appendChild(appleElement);
-
-		// Calculate the position of the score span
-		const scoreRect = scoreSpan.getBoundingClientRect();
-		const scoreX = scoreRect.left + scoreRect.width / 2;
-		const scoreY = scoreRect.top + scoreRect.height / 2;
-
-		// Calculate the position of the canvas
-		const canvasRect = canvas.getBoundingClientRect();
-		const canvasX = canvasRect.left + apple.x;
-		const canvasY = canvasRect.top + apple.y;
-
-		// Animate the apple jump from the canvas to the score span
-		appleElement.style.left = canvasX + "px";
-		appleElement.style.top = canvasY + "px";
-		appleElement.style.transition = "all 1s";
-
-		requestAnimationFrame(() => {
-			appleElement.style.left = scoreX + "px";
-			appleElement.style.top = scoreY + "px";
-			appleElement.style.opacity = "0";
-		});
-
-		// Remove the apple element after the animation finishes
-		appleTimeout = setTimeout(() => {
-			appleElement.remove();
-		}, 2000);
 
 		apple = setNewCoordinates();
 
@@ -433,6 +399,7 @@ const game = (options, canvas, ctx) => {
 	};
 
 	const moveSnake = () => {
+		myData.eatenApple = null;
 		let head = {
 			x: snake[0].x,
 			y: snake[0].y,
@@ -469,8 +436,6 @@ const game = (options, canvas, ctx) => {
 		checkBadCollisions();
 		checkFoodCollision();
 	};
-
-	const hasCollided = () => myData.lives < 0;
 
 	const getMyData = () => myData;
 	const getBonus = () => bonus;

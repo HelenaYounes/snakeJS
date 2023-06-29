@@ -22,7 +22,8 @@ let levelDiv = document.getElementById("level");
 let livesDiv = document.getElementById("lives");
 let highestScoreDiv = document.getElementById("highestscore");
 let newGame = true;
-let updateInterval;
+let animation = true;
+let updateInterval, appleTimeout;
 
 const myGame = game(custom_options, canvas, ctx);
 let { init, getMyData, stopGame, runGame, getBonus } = myGame;
@@ -36,6 +37,47 @@ const reset = () => {
 	scoreDiv.textContent = score;
 	livesDiv.textContent = lives;
 	levelDiv.textContent = level;
+};
+
+const appleAnimation = (apple) => {
+	if (animation) {
+		animation = false;
+		clearTimeout(appleTimeout);
+		//add apple animation
+
+		// Animate the apple jump
+		const appleElement = document.createElement("div");
+		appleElement.classList.add("jump-animation");
+		appleElement.innerText = "+5";
+		document.body.appendChild(appleElement);
+
+		// Calculate the position of the score span
+		const scoreRect = scoreSpan.getBoundingClientRect();
+		const scoreX = scoreRect.left + scoreRect.width / 2;
+		const scoreY = scoreRect.top + scoreRect.height / 2;
+
+		// Calculate the position of the canvas
+		const canvasRect = canvas.getBoundingClientRect();
+		const canvasX = canvasRect.left + apple.x;
+		const canvasY = canvasRect.top + apple.y;
+
+		// Animate the apple jump from the canvas to the score span
+		appleElement.style.left = canvasX + "px";
+		appleElement.style.top = canvasY + "px";
+		appleElement.style.transition = "all 1s";
+
+		requestAnimationFrame(() => {
+			appleElement.style.left = scoreX + "px";
+			appleElement.style.top = scoreY + "px";
+			appleElement.style.opacity = "0";
+		});
+
+		// Remove the apple element after the animation finishes
+		appleTimeout = setTimeout(() => {
+			appleElement.remove();
+			animation = true;
+		}, 2000);
+	}
 };
 const gameover = () => {
 	clearInterval(updateGame);
@@ -52,9 +94,11 @@ const gameStateHandler = () => {
 };
 
 const updateGame = () => {
-	let { score, lives, highestscore, level, gameOver } = getMyData();
+	let { score, lives, highestscore, level, gameOver, eatenApple } = getMyData();
 	let { active, countdown } = getBonus();
-
+	if (!!eatenApple) {
+		appleAnimation(eatenApple);
+	}
 	countdownWrapper.style.display = active ? "block" : "none";
 
 	countdownSpan.textContent = countdown;
