@@ -38,16 +38,7 @@ const setNewCoordinates = (dimensions, cellSize) => {
 	return { x: randX, y: randY };
 };
 
-const drawItems = (ctx, cellSize, ...items) => {
-	items.forEach((el) => {
-		if (el.active) {
-			ctx.drawImage(el.img, el.x, el.y, cellSize, cellSize);
-		}
-	});
-};
-
 export {
-	drawItems,
 	collision,
 	checkBounds,
 	inVicinity,
