@@ -16,6 +16,7 @@ const game_defaults = {
 	mouthOpen: false,
 	gameOn: false,
 	died: false,
+	respawned: false,
 };
 //create image, and argument as the image source
 const createImage = (src) => {
@@ -80,6 +81,8 @@ const keyEvent = {
 const cellSize = 30;
 
 const game = (options, canvas, ctx) => {
+	canvas.width = options.width || game_defaults.width;
+	canvas.height = options.height || game_defaults.height;
 	let apple,
 		bonus,
 		snake,
@@ -91,6 +94,27 @@ const game = (options, canvas, ctx) => {
 		tongue,
 		gameInterval,
 		myData;
+
+	const setNewCoordinates = () => {
+		let randX =
+			Math.floor(Math.random() * (canvas.width / cellSize - 2) + 1) * cellSize;
+		let randY =
+			Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
+		return { x: randX, y: randY };
+	};
+	const default_snake = [
+		{
+			x: Math.floor(canvas.width / (2 * cellSize)) * cellSize,
+			y: Math.floor(canvas.height / (2 * cellSize)) * cellSize,
+			isEating: false,
+			direction: "left",
+		},
+	];
+
+	const default_bonus = { ...setNewCoordinates(), countdown: 5, active: false };
+	const default_apple = { ...setNewCoordinates(), active: true };
+	const default_rotten = { ...setNewCoordinates(), active: false };
+	//give randown x and y coordinates, withing canvas area
 
 	//check if there is collision between 2 given cells
 	const collision = (node) => (item) => node.x === item.x && node.y === item.y;
@@ -121,42 +145,20 @@ const game = (options, canvas, ctx) => {
 		return checkBounds(node) || checkCollision(arr.slice(1), node);
 	};
 
-	//give randown x and y coordinates, withing canvas area
-
-	const setNewCoordinates = () => {
-		let randX =
-			Math.floor(Math.random() * (canvas.width / cellSize - 2) + 1) * cellSize;
-		let randY =
-			Math.floor(Math.random() * (canvas.height / cellSize - 2) + 1) * cellSize;
-		return { x: randX, y: randY };
-	};
-
 	const init = () => {
 		myData = { ...game_defaults, ...options };
 
 		clearInterval(tongueInterval);
 		clearInterval(bonusInterval);
-		canvas.width = myData.width;
-		canvas.height = myData.height;
 
-		rotten = setNewCoordinates();
-		rotten.active = false;
-		apple = setNewCoordinates();
-		snake = [
-			{
-				x: Math.floor(canvas.width / (2 * cellSize)) * cellSize,
-				y: Math.floor(canvas.height / (2 * cellSize)) * cellSize,
-				isEating: false,
-				direction: "left",
-			},
-		];
-		bonus = setNewCoordinates();
-		bonus.countdown = 5;
-		bonus.active = false;
+		rotten = { ...default_rotten };
+		apple = { ...default_apple };
+		snake = [...default_snake];
+		bonus = { ...default_bonus };
 	};
 	const respawn = () => {
-		const centerX = Math.floor(canvas.width / 2);
-		const centerY = Math.floor(canvas.height / 2);
+		const centerX = Math.floor(canvas.width / (2 * cellSize)) * cellSize;
+		const centerY = Math.floor(canvas.height / (2 * cellSize)) * cellSize;
 
 		let dx = snake[0].x - centerX;
 		let dy = snake[0].y - centerY;
@@ -167,6 +169,9 @@ const game = (options, canvas, ctx) => {
 		});
 		myData.direction = snake[0].direction;
 		myData.died = false;
+		rotten = { ...default_rotten };
+		apple = { ...default_apple };
+		bonus = { ...default_bonus };
 	};
 	const stopBonusCountdown = () => {
 		bonus.active = false;
@@ -397,8 +402,9 @@ const game = (options, canvas, ctx) => {
 			clearInterval(gameInterval);
 
 			if (myData.lives >= 0) {
+				myData.gameOn = false;
+				myData.respawned = true;
 				respawn();
-				runGame();
 			}
 		}
 	};
@@ -465,6 +471,8 @@ const game = (options, canvas, ctx) => {
 	const getMyData = () => myData;
 
 	const runGame = () => {
+		myData.gameOn = true;
+		myData.respawned = false;
 		tongueInterval = setInterval(
 			() => (myData.tongueOut = !myData.tongueOut),
 			1000
@@ -480,6 +488,7 @@ const game = (options, canvas, ctx) => {
 		clearInterval(gameInterval);
 		clearInterval(tongueInterval);
 		clearInterval(bonusInterval);
+		myData.gameOn = false;
 	};
 	return {
 		init,
