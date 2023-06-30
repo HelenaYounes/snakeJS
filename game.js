@@ -16,6 +16,7 @@ import {
 	inVicinity,
 	badPosition,
 	setNewCoordinates,
+	foodPerimeter,
 } from "./utils.js";
 
 //do I keep score , level ... in object, or can i set up as single vars
@@ -29,9 +30,7 @@ const game_defaults = {
 	tongueOut: true,
 	mouthOpen: false,
 	gameOn: false,
-	died: false,
-	gameOver: false,
-	bonusActive: false,
+	crashed: false,
 	eatenApple: null,
 };
 
@@ -58,28 +57,27 @@ const game = (options, elements) => {
 		bonus,
 		snake,
 		rotten,
-		redBodyTimeout,
 		tongueInterval,
 		bonusTimeout,
 		bonusInterval,
+		rottenInterval,
 		newGame,
-		gameInterval,
+		loopInterval,
 		gameState,
-		updateInterval,
 		appleTimeout;
 
 	const init = () => {
 		gameState = { ...game_defaults, ...options };
-
 		canvas.width = gameState.width;
 		canvas.height = gameState.height;
-
+		newGame = true;
 		snake = [
 			{
 				x: Math.floor(canvas.width / (2 * cellSize)) * cellSize,
 				y: Math.floor(canvas.height / (2 * cellSize)) * cellSize,
 				isEating: false,
 				direction: "left",
+				active: true,
 			},
 		];
 		bonus = {
@@ -99,9 +97,6 @@ const game = (options, elements) => {
 			img: rottenImg,
 		};
 		animation = true;
-		newGame = true;
-		clearInterval(tongueInterval);
-		clearInterval(bonusInterval);
 	};
 
 	const respawn = () => {
@@ -227,8 +222,9 @@ const game = (options, elements) => {
 			}
 
 			ctx.drawImage(snakeImage, body.x, body.y, cellSize, cellSize);
-			if (gameState.died) {
+			if (gameState.crashed) {
 				changeColor(body);
+				gameState.crashed = false;
 			}
 		});
 	};
@@ -320,46 +316,43 @@ const game = (options, elements) => {
 			++gameState.lives;
 		}
 	};
+	const loseLife = () => {
+		gameState.crashed = true;
+		--gameState.lives;
+		gameState.score -= 10;
+		gameState.speed += 5;
+		rotten = {
+			...setNewCoordinates(canvas, cellSize),
+			active: false,
+		};
 
-	//check if snake caught food, if got apple, increment score and speed, if not, snake array pops.
-	const checkFoodCollision = () => {
-		let foods = [apple, bonus];
-		let res = foods.find(
-			(food) => food.x === snake[0].x && food.y === snake[0].y
-		);
-		if (res === apple) {
+		snake.forEach((body) => (body.isEating = false));
+	};
+
+	const kill = () => {
+		clearInterval(tongueInterval);
+		clearInterval(bonusInterval);
+		clearInterval(rottenInterval);
+		clearInterval(loopInterval);
+		clearTimeout(appleTimeout);
+		clearTimeout(bonusTimeout);
+		init();
+		restartDivs();
+	};
+	const gameover = () => {
+		gameoverDiv.style.opacity = "1";
+		kill();
+	};
+
+	const checkCollisions = () => {
+		if (collision(snake[0])(apple)) {
 			gotApple();
 		} else {
 			snake.pop();
-			if (res === bonus) {
+			if (badPosition([...snake, rotten], snake[0], canvas)) {
+				loseLife();
+			} else if (collision(snake[0])(bonus)) {
 				gotBonus();
-			}
-		}
-		rotten.active = gameState.level > 0 && gameState.level % 2 === 0;
-	};
-
-	const checkBadCollisions = () => {
-		if (
-			badPosition(snake, snake[0], canvas) ||
-			(collision(snake[0])(rotten) && rotten.active)
-		) {
-			gameState.died = true;
-			--gameState.lives;
-			gameState.score -= 10;
-			gameState.speed += 5;
-			rotten = { ...rotten, ...setNewCoordinates(canvas, cellSize) };
-			rotten.active = false;
-			snake.forEach((body) => (body.isEating = false));
-
-			if (gameState.lives >= 0) {
-				clearTimeout(redBodyTimeout);
-				redBodyTimeout = setTimeout(() => {
-					gameState.died = false;
-				}, 1000);
-				respawn();
-			} else {
-				gameState.gameOver = true;
-				stopGame();
 			}
 		}
 	};
@@ -384,6 +377,7 @@ const game = (options, elements) => {
 		}
 	};
 
+	//maybe add x and y perimeter in ead obj that is 2 cellsize ahead, to check collision with vivinity of item
 	const moveSnake = () => {
 		gameState.eatenApple = null;
 		let head = {
@@ -391,6 +385,7 @@ const game = (options, elements) => {
 			y: snake[0].y,
 			direction: gameState.direction,
 			isEating: false,
+			active: true,
 		};
 
 		switch (gameState.direction) {
@@ -411,20 +406,24 @@ const game = (options, elements) => {
 		}
 
 		snake.unshift(head);
-		gameState.mouthOpen =
-			inVicinity(snake[0], apple, cellSize) ||
-			(bonus.active && inVicinity(snake[0], bonus, cellSize));
+		gameState.mouthOpen = foodPerimeter(
+			snake[0],
+			cellSize,
+			bonus,
+			apple,
+			rotten
+		);
 	};
 
 	const loop = () => {
 		draw();
 		moveSnake();
-		checkBadCollisions();
-		checkFoodCollision();
-	};
+		checkCollisions();
 
-	const getMyData = () => gameState;
-	const getBonus = () => bonus;
+		// checkBadCollisions();
+		// checkFoodCollision();
+		updateGame();
+	};
 
 	const runGame = () => {
 		gameState.gameOn = true;
@@ -436,89 +435,79 @@ const game = (options, elements) => {
 			activateBonus,
 			Math.floor(Math.random() * (13 - 6) + 6) * 1000
 		);
-		gameInterval = setInterval(loop, gameState.speed);
+		rottenInterval = setInterval(() => {
+			rotten.active = true;
+		}, Math.floor(Math.random() * (17 - 6) + 6) * 1000);
+
+		loopInterval = setInterval(loop, gameState.speed);
 	};
 	const stopGame = () => {
-		clearInterval(gameInterval);
+		clearInterval(loopInterval);
 		clearInterval(tongueInterval);
 		clearInterval(bonusInterval);
+		clearInterval(rottenInterval);
 		gameState.gameOn = false;
 	};
 
 	const updateGame = () => {
-		let { score, lives, level, gameOver, eatenApple } = getMyData();
-		let { active, countdown } = getBonus();
-		if (!!eatenApple) {
-			appleAnimation(eatenApple);
-		}
-		countdownWrapper.style.display = active ? "block" : "none";
-		if (score > highScr) {
-			highScr = score;
+		if (gameState.score > highScr) {
+			highScr = gameState.score;
 			localStorage.clear();
 			localStorage.setItem("highestscore", JSON.stringify(highScr));
 		}
-		countdownSpan.textContent = countdown;
-
+		countdownWrapper.style.display = bonus.active ? "block" : "none";
+		countdownSpan.textContent = bonus.countdown;
 		highestScoreDiv.textContent = highScr;
-		scoreDiv.textContent = score;
-		livesDiv.textContent = lives;
-		levelDiv.textContent = level;
-		if (gameOver) {
-			gameover();
-		}
-	};
+		scoreDiv.textContent = gameState.score;
+		livesDiv.textContent = gameState.lives;
+		levelDiv.textContent = gameState.level;
 
-	const gameover = () => {
-		clearInterval(updateGame);
-		gameoverDiv.style.opacity = "1";
-		init();
+		if (!!gameState.eatenApple) {
+			appleAnimation(gameState.eatenApple);
+		} else if (gameState.crashed) {
+			gameState.crashed = false;
+			if (gameState.lives < 0) {
+				gameover();
+			} else respawn();
+		}
 	};
 
 	const gameStateHandler = () => {
-		let { gameOn } = getMyData();
 		if (newGame) {
-			defaultGame();
 			canvasDiv.style.backgroundImage = 'url("./assets/snakeBackground.jpeg")';
 			newGame = false;
 		}
-		gameOn ? pause() : start();
+		gameState.gameOn ? pause() : start();
 	};
 
 	const start = () => {
 		startPauseDiv.textContent = "PAUSE";
 		runGame();
-		updateInterval = setInterval(updateGame, 50);
 	};
 	const pause = () => {
-		clearInterval(updateInterval);
 		startPauseDiv.textContent = "RESUME";
 		stopGame();
 	};
 
-	const defaultGame = () => {
-		init();
-		let { score, level, lives } = getMyData();
+	const restartDivs = () => {
+		countdownWrapper.style.display = "none";
 		gameoverDiv.style.opacity = "0";
 		startPauseDiv.textContent = "NEW GAME";
-		newGame = true;
+
 		highestScoreDiv.textContent = highScr;
-		scoreDiv.textContent = score;
-		livesDiv.textContent = lives;
-		levelDiv.textContent = level;
+		scoreDiv.textContent = gameState.score;
+		livesDiv.textContent = gameState.lives;
+		levelDiv.textContent = gameState.level;
 	};
 
 	startPauseDiv.addEventListener("click", gameStateHandler);
 	document.addEventListener("keydown", handleKeyPressed);
-
 	return {
 		init,
 		handleKeyPressed,
-		getMyData,
 		loop,
 		stopGame,
 		runGame,
-		getBonus,
-		defaultGame,
 	};
 };
 export default game;

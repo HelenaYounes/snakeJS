@@ -1,5 +1,6 @@
 //check if there is collision between 2 given cells
-const collision = (node) => (item) => node.x === item.x && node.y === item.y;
+const collision = (node) => (item) =>
+	node.x === item.x && node.y === item.y && item.active;
 
 //check if node is within canvas area
 const checkBounds = (node, dimensions) => {
@@ -7,19 +8,26 @@ const checkBounds = (node, dimensions) => {
 	let outYaxis = node.y < 0 || node.y > dimensions.height;
 	return outXaxis || outYaxis;
 };
-
 //check if a cell/square is within a given distance of another cell/square
-const inVicinity = (node, item, cellSize) => {
+const inVicinity = (item) => (node, cellSize) => {
 	let withinXaxis =
 		node.x <= item.x + 2 * cellSize && node.x >= item.x - 2 * cellSize;
 	let withinYaxis =
 		node.y <= item.y + 2 * cellSize && node.y >= item.y - 2 * cellSize;
-	return withinXaxis && withinYaxis;
+	return withinXaxis && withinYaxis && item.active;
 };
+
+//check vicinity for food array
+const foodPerimeter = (node, cellSize, ...items) =>
+	items.some(inVicinity(node, cellSize));
 
 //check if any segment of given array is colliding with specific square/cell
 const checkCollision = (arr, node) => {
 	return arr.some(collision(node));
+};
+//return element if collision with node
+const getCollidedElement = (arr, node) => {
+	return arr.finds(collision(node));
 };
 
 //check both if given cell is within canvas area or if it collides with a specific cell/
@@ -45,4 +53,5 @@ export {
 	checkCollision,
 	badPosition,
 	setNewCoordinates,
+	foodPerimeter,
 };

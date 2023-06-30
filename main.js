@@ -34,9 +34,8 @@ const elements = {
 };
 
 // INIT DISPLAY
-countdownWrapper.style.display = "none";
 
 const myGame = game(custom_options, elements);
-let { defaultGame } = myGame;
+let { init } = myGame;
 
-window.addEventListener("load", defaultGame);
+window.addEventListener("load", init);
