@@ -56,13 +56,19 @@ const game = (options, elements) => {
 		newGame,
 		rotten,
 		gameState,
-		loopInterval,
-		bonusTimeout,
-		resetTimeout,
-		appleTimeout;
+		intervalTimeoutIds;
 
 	const initState = () => {
 		gameState = { ...game_defaults, ...options };
+		intervalTimeoutIds = {
+			loop: null,
+			bonus: null,
+			rotten: null,
+			tongue: null,
+			bonusTimeout: null,
+			resetTimeout: null,
+			appleTimeout: null,
+		};
 		canvas.width = gameState.width;
 		canvas.height = gameState.height;
 		newGame = true;
@@ -94,21 +100,22 @@ const game = (options, elements) => {
 		animation = true;
 	};
 	const tongueToggle = () => {
-		if (gameState.gameOn) {
-			gameState.tongueOut = !gameState.tongueOut;
-		}
+		gameState.tongueOut = !gameState.tongueOut;
 	};
 
 	const activateRotten = () => {
-		if (gameState.gameOn && !rotten.active) {
+		if (!rotten.active) {
 			rotten.active = true;
 		}
 	};
 
 	const startIntervals = () => {
-		setInterval(tongueToggle, 1000);
-		setInterval(activateBonus, Math.floor(Math.random() * (13 - 6) + 6) * 1000);
-		setInterval(
+		intervalTimeoutIds.tongue = setInterval(tongueToggle, 1000);
+		intervalTimeoutIds.bonus = setInterval(
+			activateBonus,
+			Math.floor(Math.random() * (13 - 6) + 6) * 1000
+		);
+		intervalTimeoutIds.rotten = setInterval(
 			activateRotten,
 			Math.floor(Math.random() * (17 - 6) + 6) * 1000
 		);
@@ -134,12 +141,12 @@ const game = (options, elements) => {
 		bonus = { ...bonus, ...setNewCoordinates(canvas, cellSize) };
 	};
 	const updateCountDown = () => {
-		clearTimeout(bonusTimeout);
+		clearTimeout(intervalTimeoutIds.bonusTimeout);
 		if (bonus.countdown === 0) {
 			stopBonusCountdown();
 		} else {
 			bonus.countdown -= 1;
-			bonusTimeout = setTimeout(updateCountDown, 1000);
+			intervalTimeoutIds.bonusTimeout = setTimeout(updateCountDown, 1000);
 		}
 	};
 
@@ -278,7 +285,7 @@ const game = (options, elements) => {
 	const appleAnimation = (apple) => {
 		if (animation) {
 			animation = false;
-			clearTimeout(appleTimeout);
+			clearTimeout(intervalTimeoutIds.appleTimeout);
 
 			// jump
 			const appleElement = document.createElement("div");
@@ -308,7 +315,7 @@ const game = (options, elements) => {
 			});
 
 			// Remove the apple element after the animation finishes
-			appleTimeout = setTimeout(() => {
+			intervalTimeoutIds.appleTimeout = setTimeout(() => {
 				appleElement.remove();
 				animation = true;
 			}, 2000);
@@ -326,7 +333,7 @@ const game = (options, elements) => {
 
 	const ateBonus = () => {
 		if (bonus.active && bonus.countdown > 0) {
-			clearTimeout(bonusTimeout);
+			clearTimeout(intervalTimeoutIds.bonusTimeout);
 			stopBonusCountdown();
 			snake[0].isEating = true;
 			++gameState.lives;
@@ -353,7 +360,8 @@ const game = (options, elements) => {
 
 	const gameover = () => {
 		gameoverSpan.style.opacity = "1";
-		resetTimeout = setTimeout(initGame, 2000);
+
+		intervalTimeoutIds.resetTimeout = setTimeout(initGame, 2000);
 	};
 
 	const checkCollisions = () => {
@@ -445,18 +453,21 @@ const game = (options, elements) => {
 			updateHTML();
 		}
 	};
-
+	const clearTimeoutInterval = () => {
+		for (let key in intervalTimeoutIds) {
+			clearInterval(intervalTimeoutIds[key]);
+			clearTimeout(intervalTimeoutIds[key]);
+		}
+	};
 	const runGame = () => {
 		gameState.gameOn = true;
 		newGame = false;
-		loopInterval = setInterval(loop, gameState.speed);
 		startIntervals();
+		intervalTimeoutIds.loop = setInterval(loop, gameState.speed);
 	};
 	const stopGame = () => {
+		clearTimeoutInterval();
 		gameState.gameOn = false;
-		clearInterval(loopInterval);
-		clearTimeout(appleTimeout);
-		clearTimeout(bonusTimeout);
 	};
 
 	const updateHighScore = () => {
@@ -483,7 +494,7 @@ const game = (options, elements) => {
 	};
 
 	const initGame = () => {
-		clearTimeout(resetTimeout);
+		clearTimeoutInterval();
 		initState();
 		updateHTML();
 	};
